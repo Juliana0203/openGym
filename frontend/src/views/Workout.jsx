@@ -29,7 +29,8 @@ import { durationSheet } from '../components/DurationWheel.jsx'
 import { REST_MAX, fmtRest, restWheelValue } from '../lib/duration.js'
 import { startFlow, exercisePicker, exConfigSheet, exerciseDetailSheet, finishWorkout, exitWorkoutEdit, workoutCompleteSheet, confirmSheet, exerciseNoteSheet, sessionNoteSheet, renameWorkoutSheet, swapActiveWorkoutExercise, barWeightSheet, menuSheet, effortPickerSheet, exerciseHistorySheet, addRoutineToSessionSheet, finishWorkoutSheet, finishWorkoutNow, swapActiveWorkoutToBackup } from '../sheets.jsx'
 import { afterScrollRestore, scrollRestorePending } from '../components/Modals.jsx'
-import { effortColor } from '../lib/effort.js'
+import { effortColor, rirOf } from '../lib/effort.js'
+import { autoRegulate, DEFAULT_TARGET_RIR } from '../lib/autoRegulation.js'
 import Elapsed from '../components/Elapsed.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button, Check, NumberField } from '../components/ui.jsx'
@@ -520,6 +521,28 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // rating or change one. rirOf-via-effortColor keeps the colour identical whether the value
   // is logged as RIR or RPE. With the +/- buttons switched off (Workout controls) a logged
   // rating is just the tinted value, which still opens the picker.
+  // Coach nudge after rating a set: compare the reported RIR with the target and offer a load
+  // for the sets still to do. "Apply" writes it to the remaining working rows of this exercise.
+  const coachNudge = (i, nv) => {
+    if (mode !== 'reps' || nv == null) return
+    const sets = useStore.getState().S.active?.entries[entryIdx]?.sets
+    const s = sets?.[i]
+    if (!s || isWarmupRow(s) || isSideSet(s) || !(Number(s.w) > 0)) return
+    const rir = rirOf(kind === 'rpe' ? { rpe: nv } : { rir: nv })
+    const r = autoRegulate(DEFAULT_TARGET_RIR, rir, s.w, loadStep)
+    if (r.action === 'keep') return
+    const next = fmtNum(r.weight) + ' ' + S.unit
+    const msg = r.action === 'decrease'
+      ? t('Harder than planned (RIR {0}, target {1}). Drop to {2}.', fmtNum(rir), DEFAULT_TARGET_RIR, next)
+      : t('Felt easy (RIR {0}, target {1}). Try {2}.', fmtNum(rir), DEFAULT_TARGET_RIR, next)
+    useUI.getState().toast(msg, {
+      action: t('Apply'),
+      onAction: () => {
+        const live = useStore.getState().S.active?.entries[entryIdx]?.sets || []
+        live.forEach((x, j) => { if (j > i && !x.done && !isWarmupRow(x) && !isSideSet(x)) onField(j, 'w', r.weight) })
+      }
+    })
+  }
   const effortCell = (s, i, col) => {
     const v = s[col.f] ?? null
     const rir = col.eff === 'rpe' ? (v == null ? null : 10 - v) : v
@@ -534,6 +557,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
       if (nv == null) return
       const fresh = useStore.getState().S.active?.entries[entryIdx]?.sets[i]
       if (fresh && !fresh.done) onToggle(i)
+      coachNudge(i, nv)
     }
     const open = () => effortPickerSheet(col.eff, v, pickEffort)
     if (v == null) return (
