@@ -18,6 +18,7 @@ import { nav, closeThenNav, navToWorkout } from './lib/nav.js'
 import { buildStarterPlan, starterPlanDays, starterPlanOptions } from './lib/starter.js'
 import { buildRecommendedPlan, GOALS, MIN_DAYS, MAX_DAYS } from './lib/routineRecommendations.js'
 import { genderOf } from './lib/gender.js'
+import { recommenderProfile } from './lib/profile.js'
 import Media, { Thumb } from './components/Media.jsx'
 import CustomMediaField from './components/CustomMediaField.jsx'
 import WorkoutMediaSection, { workoutMediaCount } from './components/WorkoutMedia.jsx'
@@ -331,8 +332,8 @@ const EMPHASIS_COPY = {
 function SuggestRoutineSheet({ close }) {
   const S = useStore(s => s.S)
   const planned = [0, 1, 2, 3, 4, 5, 6].filter(d => [].concat(S.week?.[d] || []).length).length
-  const [days, setDays] = useState(() => Math.min(MAX_DAYS, Math.max(MIN_DAYS, planned || 3)))
-  const [goal, setGoal] = useState('hypertrophy')
+  const [days, setDays] = useState(() => Math.min(MAX_DAYS, Math.max(MIN_DAYS, Number(S.daysAvailable) || planned || 3)))
+  const [goal, setGoal] = useState(() => recommenderProfile(S).goal)
   const fitTo = activeProfile(S)
   const rec = useMemo(() => buildRecommendedPlan(
     { gender: genderOf(S), daysAvailable: days, goal },

@@ -25,6 +25,7 @@ import { speak, speechSupported, SPEECH_RATES, speechRateOf } from '../lib/speec
 import { sampleCue } from '../lib/spoken-cues.js'
 import { muscleTargetsSheet } from '../components/WeeklySets.jsx'
 import { aboutYouSheet } from '../components/StrengthLevel.jsx'
+import { profileWizardSheet, profileSummary } from '../components/ProfileWizard.jsx'
 import { api, webauthnOK, passkeyRegister, passkeyError, IS_ANDROID } from '../lib/api.js'
 import { pushSupported, enablePush, disablePush, sendTestPush, syncPushSubscription } from '../lib/push.js'
 import { wakeLockSupported } from '../lib/wakelock.js'
@@ -927,6 +928,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           <Switch aria-label={t('Count body weight in bodyweight lifts')} checked={S.volumeBodyweight === true}
             onChange={v => update(s => { s.volumeBodyweight = v })} />
         </Row>
+        <Row icon="person" iconTint="var(--blue)" title={t('Your profile')} subtitle={profileSummary(S)} accessory="chevron" onClick={profileWizardSheet} />
         {/* Sex and year of birth, read only by the strength levels (lib/strength-level.js). */}
         {on('strength') && <Row icon="person" iconTint="var(--teal)" title={t('About you')} subtitle={t('For your strength levels')} accessory="chevron" onClick={aboutYouSheet} />}
         {/* #859: a day can hold several weigh-ins. Which one is the day's number for the chart, the
