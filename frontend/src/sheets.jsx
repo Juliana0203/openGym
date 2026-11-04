@@ -16,6 +16,8 @@ import { beep, vibrate } from './lib/sound.js'
 import { t, tn, dateLocale, instrFor, instrTranslated, descFor, exerciseNameFor, exerciseNameClass, getLang, useLang } from './lib/i18n.js'
 import { nav, closeThenNav, navToWorkout } from './lib/nav.js'
 import { buildStarterPlan, starterPlanDays, starterPlanOptions } from './lib/starter.js'
+import { buildRecommendedPlan, GOALS, MIN_DAYS, MAX_DAYS } from './lib/routineRecommendations.js'
+import { genderOf } from './lib/gender.js'
 import Media, { Thumb } from './components/Media.jsx'
 import CustomMediaField from './components/CustomMediaField.jsx'
 import WorkoutMediaSection, { workoutMediaCount } from './components/WorkoutMedia.jsx'
@@ -229,7 +231,8 @@ const PLAN_COPY = {
   ppl: () => ({ name: t('Push / Pull / Legs'), about: t('Push, pull and legs each get their own day.') }),
   'upper-lower': () => ({ name: t('Upper / Lower'), about: t('Upper body twice, lower body twice.') }),
   'full-body': () => ({ name: t('Full Body'), about: t('Three sessions, the whole body each time.') }),
-  '5x5': () => ({ name: t('5×5'), about: t('Five sets of five on the main barbell lifts.') })
+  '5x5': () => ({ name: t('5×5'), about: t('Five sets of five on the main barbell lifts.') }),
+  'ppl-upper-lower': () => ({ name: t('Push / Pull / Legs + Upper / Lower'), about: t('Push, pull and legs, then an upper and a lower day.') })
 }
 
 // Adds the plan's routines (reusing one you already have under the same name) and puts them on
@@ -240,12 +243,21 @@ const PLAN_COPY = {
 export function loadStarterPlan(planId, profile) {
   const plan = buildStarterPlan(planId, profile ? profileEquipment(profile) : undefined)
   if (!plan) return false
+  applyPlan(plan)
+  if (plan.fit) toast(t('{0} loaded, fitted to "{1}": {2} swapped, {3} dropped', PLAN_COPY[planId]().name, profile.name, plan.fit.swapped, plan.fit.dropped))
+  else toast(t('{0} loaded', PLAN_COPY[planId]().name))
+  return true
+}
+
+function applyPlan(plan, sameVolume = false) {
   update(st => {
     // Loading the same plan again reuses the routines it added last time (same name, same
     // exercises) for the weekdays instead of a second Upper A, Lower A, ... under the same names.
     // A plan fitted to different equipment has other exercises, so it is added alongside.
+    // A suggestion is also re-cut in sets and reps, so it only reuses a routine cut the same way.
     const idOf = {}
-    const sameLift = (a, b) => a.ex.length === b.ex.length && a.ex.every((e, i) => e.id === b.ex[i].id)
+    const sameLift = (a, b) => a.ex.length === b.ex.length && a.ex.every((e, i) =>
+      e.id === b.ex[i].id && (!sameVolume || (e.sets === b.ex[i].sets && e.reps === b.ex[i].reps)))
     plan.routines.forEach(r => {
       const have = st.routines.find(x => x.name === r.name && sameLift(x, r))
       if (have) idOf[r.id] = have.id
@@ -253,9 +265,6 @@ export function loadStarterPlan(planId, profile) {
     })
     plan.schedule.forEach(({ day, routineId }) => { st.week[day] = [idOf[routineId]] })
   })
-  if (plan.fit) toast(t('{0} loaded, fitted to "{1}": {2} swapped, {3} dropped', PLAN_COPY[planId]().name, profile.name, plan.fit.swapped, plan.fit.dropped))
-  else toast(t('{0} loaded', PLAN_COPY[planId]().name))
-  return true
 }
 
 // Intl joins the days the way each language does it — "and" vs "und", "、" in Chinese.
@@ -305,6 +314,74 @@ function StarterPlanChooser({ close }) {
 }
 
 export const starterPlanSheet = () => ui().openSheet(close => <StarterPlanChooser close={close} />)
+
+const GOAL_COPY = {
+  hypertrophy: () => t('Muscle growth'),
+  strength: () => t('Strength'),
+  recomposition: () => t('Body recomposition')
+}
+const EMPHASIS_COPY = {
+  lower: () => t('One extra set on the lower body'),
+  upper: () => t('One extra set on the upper body'),
+  balanced: () => t('Even volume across the body')
+}
+
+// A plan for the profile: gender comes from Settings, the days and the goal are asked here. The
+// days start at what the weekly plan already uses, so most people only pick a goal.
+function SuggestRoutineSheet({ close }) {
+  const S = useStore(s => s.S)
+  const planned = [0, 1, 2, 3, 4, 5, 6].filter(d => [].concat(S.week?.[d] || []).length).length
+  const [days, setDays] = useState(() => Math.min(MAX_DAYS, Math.max(MIN_DAYS, planned || 3)))
+  const [goal, setGoal] = useState('hypertrophy')
+  const fitTo = activeProfile(S)
+  const rec = useMemo(() => buildRecommendedPlan(
+    { gender: genderOf(S), daysAvailable: days, goal },
+    { equipment: fitTo ? profileEquipment(fitTo) : undefined }
+  ), [S.gender, days, goal, fitTo])
+  const nameOf = id => rec.plan.routines.find(r => r.id === id)?.name
+  const load = () => {
+    close()
+    applyPlan(rec.plan, true)
+    toast(t('{0} loaded', PLAN_COPY[rec.split]().name))
+  }
+  const taken = rec.plan.schedule.some(({ day }) => [].concat(S.week?.[day] || []).some(id => S.routines.some(r => r.id === id)))
+  const go = () => taken
+    ? confirmSheet({
+        title: t('Load {0}?', PLAN_COPY[rec.split]().name),
+        message: t('The new plan goes on {0}. Your existing routines stay; only those days of the weekly plan change.', dayList(rec.plan.schedule.map(s => s.day))),
+        confirmText: t('Load plan'),
+        onConfirm: load
+      })
+    : load()
+  return <>
+    <h3>{t('Suggest a routine for my profile')}</h3>
+    <div className="chips" style={{ margin: '0 0 10px' }}>
+      <div className="small dim" style={{ width: '100%' }}>{t('Goal')}</div>
+      {GOALS.map(g => <button key={g} className={'chip nocap' + (goal === g ? ' on' : '')} onClick={() => setGoal(g)}>{GOAL_COPY[g]()}</button>)}
+    </div>
+    <div className="chips" style={{ margin: '0 0 10px' }}>
+      <div className="small dim" style={{ width: '100%' }}>{t('Days available per week')}</div>
+      {Array.from({ length: MAX_DAYS - MIN_DAYS + 1 }, (_, i) => MIN_DAYS + i).map(n =>
+        <button key={n} className={'chip nocap' + (days === n ? ' on' : '')} onClick={() => setDays(n)}>{n}</button>)}
+    </div>
+    <div className="small dim" style={{ margin: '0 0 10px' }}>
+      {genderOf(S) ? EMPHASIS_COPY[rec.emphasis]() : t('Set your gender in Settings to fine-tune the volume.')}
+    </div>
+    <div className="list">
+      <div className="item">
+        <span className="lrow-i" style={{ background: 'var(--surface-3)' }}><Icon name="clipboard" /></span>
+        <div className="grow">
+          <div className="tt">{PLAN_COPY[rec.split]().name}</div>
+          <div className="ss">{rec.plan.schedule.map(({ day, routineId }) => t(DAYN[day]) + ': ' + nameOf(routineId)).join(' · ')}</div>
+        </div>
+      </div>
+    </div>
+    <div style={{ height: 12 }} />
+    <Button variant="primary" onClick={go}>{t('Load suggestion')}</Button>
+  </>
+}
+
+export const suggestRoutineSheet = () => ui().openSheet(close => <SuggestRoutineSheet close={close} />)
 
 /* ============================ weight picker (shared: body weight + goal) ============================ */
 // Fixed range, not a moving window — a window that resizes itself mid-drag (the previous

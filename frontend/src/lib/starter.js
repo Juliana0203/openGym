@@ -123,9 +123,28 @@ const fitRoutines = (routines, equipment) => {
 // plan is fitted to it first, and `fit` reports how many exercises that swapped or dropped.
 export const buildStarterPlan = (id, equipment) => {
   const plan = PLANS[id]
-  if (!plan) return null
+  return plan ? assemble(plan, equipment) : null
+}
+
+const BY_KEY = Object.fromEntries([PPL, UPPER_LOWER, FULL_BODY, FIVE_BY_FIVE].flat().map(r => [r[0], r]))
+
+// A plan composed from the starter routines instead of one of the fixed PLANS: `schedule` is
+// [[weekday, routineKey], …], and `adjust(routineKey, exerciseId, sets, reps)` may return
+// [sets, reps] to re-cut the volume. Unknown keys are skipped; null when nothing is left.
+export const buildPlanFromKeys = (schedule, { equipment, adjust } = {}) => {
+  const rows = schedule.filter(([, key]) => BY_KEY[key])
+  if (!rows.length) return null
+  const routines = [...new Set(rows.map(([, key]) => key))].map(key => BY_KEY[key])
+  return assemble({ routines, schedule: rows }, equipment, adjust)
+}
+
+function assemble(plan, equipment, adjust) {
   const fit = equipment ? fitRoutines(plan.routines, equipment) : null
-  const source = fit ? fit.routines : plan.routines
+  let source = fit ? fit.routines : plan.routines
+  if (adjust) {
+    source = source.map(([key, name, emoji, list]) =>
+      [key, name, emoji, list.map(([id, sets, reps]) => [id, ...(adjust(key, id, sets, reps) || [sets, reps])])])
+  }
   const routines = build(source)
   // key → the id just minted for it, so the schedule below names its routine
   const byKey = Object.fromEntries(source.map(([key], i) => [key, routines[i].id]))
