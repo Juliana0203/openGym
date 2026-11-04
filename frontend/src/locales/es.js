@@ -3672,6 +3672,7 @@ export default {
   "{0} of {1} modules on.": "{0} de {1} módulos activos.",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "{0} deja de sincronizar mientras «Salud» está desactivado. No se desconecta nada y se pone al día cuando vuelva «Salud».",
   "Your profile": "Tu perfil",
+  "Safer variants picked for: {0}": "Variantes más seguras elegidas para: {0}",
   "Set up my profile": "Configurar mi perfil",
   "Profile saved": "Perfil guardado",
   "Answer a few questions to tailor your plan": "Responde unas preguntas para adaptar tu plan",

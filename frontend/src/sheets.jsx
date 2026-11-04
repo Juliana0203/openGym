@@ -16,9 +16,10 @@ import { beep, vibrate } from './lib/sound.js'
 import { t, tn, dateLocale, instrFor, instrTranslated, descFor, exerciseNameFor, exerciseNameClass, getLang, useLang } from './lib/i18n.js'
 import { nav, closeThenNav, navToWorkout } from './lib/nav.js'
 import { buildStarterPlan, starterPlanDays, starterPlanOptions } from './lib/starter.js'
-import { buildRecommendedPlan, GOALS, MIN_DAYS, MAX_DAYS } from './lib/routineRecommendations.js'
+import { buildRecommendedPlan, normalizeProfile, GOALS, MIN_DAYS, MAX_DAYS } from './lib/routineRecommendations.js'
 import { genderOf } from './lib/gender.js'
 import { recommenderProfile } from './lib/profile.js'
+import { INJURY_LABEL } from './components/ProfileWizard.jsx'
 import Media, { Thumb } from './components/Media.jsx'
 import CustomMediaField from './components/CustomMediaField.jsx'
 import WorkoutMediaSection, { workoutMediaCount } from './components/WorkoutMedia.jsx'
@@ -333,12 +334,13 @@ function SuggestRoutineSheet({ close }) {
   const S = useStore(s => s.S)
   const planned = [0, 1, 2, 3, 4, 5, 6].filter(d => [].concat(S.week?.[d] || []).length).length
   const [days, setDays] = useState(() => Math.min(MAX_DAYS, Math.max(MIN_DAYS, Number(S.daysAvailable) || planned || 3)))
-  const [goal, setGoal] = useState(() => recommenderProfile(S).goal)
+  const [goal, setGoal] = useState(() => normalizeProfile(recommenderProfile(S)).goal)
   const fitTo = activeProfile(S)
+  // experience, body type and injuries come from the saved profile (Settings > Your profile)
   const rec = useMemo(() => buildRecommendedPlan(
-    { gender: genderOf(S), daysAvailable: days, goal },
+    { ...recommenderProfile(S), gender: genderOf(S), daysAvailable: days, goal },
     { equipment: fitTo ? profileEquipment(fitTo) : undefined }
-  ), [S.gender, days, goal, fitTo])
+  ), [S.gender, S.experience, S.bodyType, S.injuries, days, goal, fitTo])
   const nameOf = id => rec.plan.routines.find(r => r.id === id)?.name
   const load = () => {
     close()
@@ -368,6 +370,9 @@ function SuggestRoutineSheet({ close }) {
     <div className="small dim" style={{ margin: '0 0 10px' }}>
       {genderOf(S) ? EMPHASIS_COPY[rec.emphasis]() : t('Set your gender in Settings to fine-tune the volume.')}
     </div>
+    {rec.injuries.length > 0 && <div className="small dim" style={{ margin: '0 0 10px' }}>
+      {t('Safer variants picked for: {0}', rec.injuries.map(a => INJURY_LABEL()[a]).join(', '))}
+    </div>}
     <div className="list">
       <div className="item">
         <span className="lrow-i" style={{ background: 'var(--surface-3)' }}><Icon name="clipboard" /></span>

@@ -108,15 +108,18 @@ export function latestWeight(S) {
   return p ? p.now : null
 }
 
-// How the goals the wizard asks map onto the ones the routine recommender plans for.
-const RECOMMENDER_GOAL = { lose_weight: 'recomposition', maintain: 'recomposition', bulking: 'hypertrophy', strength: 'strength' }
+// The goals the recommender is written for are lib/routineRecommendations.js GOALS; it also reads
+// the wizard's own (lose_weight, maintain, bulking, strength) through its aliases.
 
-/** { gender, daysAvailable, goal } for lib/routineRecommendations.js, from what is saved. */
+/** The profile lib/routineRecommendations.js plans for, from what is saved (it reads the wizard's goals itself). */
 export function recommenderProfile(S) {
   return {
     gender: oneOf(['male', 'female', 'other'], S?.gender),
     daysAvailable: S?.daysAvailable,
-    goal: RECOMMENDER_GOAL[S?.trainingGoal] || 'hypertrophy'
+    goal: S?.trainingGoal,
+    experience: S?.experience,
+    bodyType: S?.bodyType,
+    injuries: Array.isArray(S?.injuries) ? S.injuries : []
   }
 }
 

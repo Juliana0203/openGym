@@ -43,8 +43,9 @@ const PLANS = {
   '5x5': { routines: FIVE_BY_FIVE, schedule: [[1, '5x5-a'], [3, '5x5-b'], [5, '5x5-c']] }
 }
 
+// A row may carry a fourth item, extra config for that exercise ({ restSec, targetRir }).
 const build = routines =>
-  routines.map(([, name, emoji, list]) => ({ id: uid(), name, emoji, ex: list.map(([id, sets, reps]) => ({ id, sets, reps, weight: 0 })) }))
+  routines.map(([, name, emoji, list]) => ({ id: uid(), name, emoji, ex: list.map(([id, sets, reps, extra]) => ({ id, sets, reps, weight: 0, ...extra })) }))
 
 // Fresh routine objects (new ids) — [push, pull, legs]. The demo build seeds a history on
 // top of exactly these three, so this entry point keeps its shape.
@@ -130,17 +131,34 @@ const BY_KEY = Object.fromEntries([PPL, UPPER_LOWER, FULL_BODY, FIVE_BY_FIVE].fl
 
 // A plan composed from the starter routines instead of one of the fixed PLANS: `schedule` is
 // [[weekday, routineKey], …], and `adjust(routineKey, exerciseId, sets, reps)` may return
-// [sets, reps] to re-cut the volume. Unknown keys are skipped; null when nothing is left.
-export const buildPlanFromKeys = (schedule, { equipment, adjust } = {}) => {
+// [sets, reps] (or [sets, reps, { restSec, targetRir }]) to re-cut the volume. `swap(routineKey,
+// exerciseId)` runs first, and again after the equipment fit: undefined keeps the exercise, null
+// drops it, an id replaces it (dropped instead when the routine already has it).
+// Unknown keys are skipped; null when nothing is left.
+export const buildPlanFromKeys = (schedule, { equipment, adjust, swap } = {}) => {
   const rows = schedule.filter(([, key]) => BY_KEY[key])
   if (!rows.length) return null
   const routines = [...new Set(rows.map(([, key]) => key))].map(key => BY_KEY[key])
-  return assemble({ routines, schedule: rows }, equipment, adjust)
+  return assemble({ routines, schedule: rows }, equipment, adjust, swap)
 }
 
-function assemble(plan, equipment, adjust) {
-  const fit = equipment ? fitRoutines(plan.routines, equipment) : null
-  let source = fit ? fit.routines : plan.routines
+const swapRoutines = (routines, swap) => routines.map(([key, name, emoji, list]) => {
+  const taken = new Set(list.map(([id]) => id))
+  const out = []
+  for (const [id, sets, reps] of list) {
+    const to = swap(key, id)
+    if (to === undefined) { out.push([id, sets, reps]); continue }
+    if (to === null || taken.has(to) || !EXIDX[to]) continue
+    taken.add(to)
+    out.push([to, sets, reps])
+  }
+  return [key, name, emoji, out]
+}).filter(([, , , list]) => list.length)
+
+function assemble(plan, equipment, adjust, swap) {
+  const safe = routines => (swap ? swapRoutines(routines, swap) : routines)
+  const fit = equipment ? fitRoutines(safe(plan.routines), equipment) : null
+  let source = fit ? safe(fit.routines) : safe(plan.routines)
   if (adjust) {
     source = source.map(([key, name, emoji, list]) =>
       [key, name, emoji, list.map(([id, sets, reps]) => [id, ...(adjust(key, id, sets, reps) || [sets, reps])])])

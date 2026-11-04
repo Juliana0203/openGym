@@ -55,10 +55,10 @@ describe('profile helpers', () => {
     expect(weightProgress({ bodyweight: [] })).toBeNull()
   })
 
-  it('maps the wizard goal to the recommender goal', () => {
-    expect(recommenderProfile({ gender: 'male', daysAvailable: 4, trainingGoal: 'bulking' })).toEqual({ gender: 'male', daysAvailable: 4, goal: 'hypertrophy' })
-    expect(recommenderProfile({ trainingGoal: 'lose_weight' }).goal).toBe('recomposition')
-    expect(recommenderProfile({}).goal).toBe('hypertrophy')
+  it('hands the saved profile to the recommender as it is', () => {
+    expect(recommenderProfile({ gender: 'male', daysAvailable: 4, trainingGoal: 'bulking', experience: 'advanced', bodyType: 'easy_to_gain', injuries: ['knee'] }))
+      .toEqual({ gender: 'male', daysAvailable: 4, goal: 'bulking', experience: 'advanced', bodyType: 'easy_to_gain', injuries: ['knee'] })
+    expect(recommenderProfile({}).injuries).toEqual([])
   })
 
   it('validates ranges and converts heights', () => {
