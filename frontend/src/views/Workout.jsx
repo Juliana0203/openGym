@@ -36,8 +36,8 @@ import { youtubeSearchUrl } from '../lib/youtube.js'
 import { openExternal } from '../components/CustomMedia.jsx'
 import { startFlow, exercisePicker, exConfigSheet, exerciseDetailSheet, finishWorkout, exitWorkoutEdit, workoutCompleteSheet, confirmSheet, exerciseNoteSheet, sessionNoteSheet, renameWorkoutSheet, swapActiveWorkoutExercise, barWeightSheet, menuSheet, effortPickerSheet, exerciseHistorySheet, addRoutineToSessionSheet, finishWorkoutSheet, finishWorkoutNow, swapActiveWorkoutToBackup, setNoteSheet } from '../sheets.jsx'
 import { afterScrollRestore, scrollRestorePending } from '../components/Modals.jsx'
-import { effortColor, rirOf } from '../lib/effort.js'
-import { autoRegulate, DEFAULT_TARGET_RIR } from '../lib/autoRegulation.js'
+import { effortColor, rirOf, EFFORT_PRESETS } from '../lib/effort.js'
+import { autoRegulate, targetRirOf, withTargetRir, TARGET_RIRS } from '../lib/autoRegulation.js'
 import Elapsed from '../components/Elapsed.jsx'
 import LiveHeartRate from '../components/LiveHeartRate.jsx'
 import Icon from '../components/Icon.jsx'
@@ -140,7 +140,7 @@ const RTL_LETTER = /[֐-ࣿיִ-﷿ﹰ-﻿]/
 // enough to turn over, far shorter than the rest the set earns once both sides are held.
 const SWITCH_SIDES_SEC = 10
 
-function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSide, onField, onAddSet, onRemoveSet, onAddWarmup, onKeepWarmups, onAskCoach, onRemoveSetAt, onCopySetAt, onStartTimed, onPairPrev, onPairNext, onSetRowRef, onProgressionSettings, onRest, onNoProg, routineUpdate, onSwap, onSwapBackup, onMoveUp, onMoveDown, canMoveUp, canMoveDown, onRemoveExercise, busy }) {
+function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSide, onField, onTargetRir, onAddSet, onRemoveSet, onAddWarmup, onKeepWarmups, onAskCoach, onRemoveSetAt, onCopySetAt, onStartTimed, onPairPrev, onPairNext, onSetRowRef, onProgressionSettings, onRest, onNoProg, routineUpdate, onSwap, onSwapBackup, onMoveUp, onMoveDown, canMoveUp, canMoveDown, onRemoveExercise, busy }) {
   // The block reads the state as its exercise sees it (lib/ex-unit.js): in the exercise's own
   // weight unit when it has one (#657), so its rows, steppers, plates, owned weights, "last time"
   // and records all speak that unit. Every change goes through inEntryUnit or the parent's
@@ -501,6 +501,12 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
       { more: [
         { title: t('Exercise'), items: [
           onProgressionSettings && { icon: 'slider', label: t('Exercise settings'), sub: guidance ? t(guidance.policyLabel) : t('Sets, reps, rest, progression'), onClick: onProgressionSettings },
+          onTargetRir && mode === 'reps' && { icon: 'gauge', label: t('Target RIR'), sub: 'RIR ' + targetRirOf(cfg), onClick: () => menuSheet({
+            title: t('Target RIR'),
+            items: EFFORT_PRESETS.filter(p => TARGET_RIRS.includes(p.rir)).map(p => ({
+              icon: 'gauge', label: 'RIR ' + p.rir, sub: t(p.feel), on: targetRirOf(cfg) === p.rir, onClick: () => onTargetRir(p.rir)
+            }))
+          }) },
           plateLoading && { icon: 'plate', label: t('Plate loading'), sub: loadSummary, onClick: () => barWeightSheet(entry.id, cfg) },
           { icon: 'info', label: t('How to do it'), onClick: () => exerciseDetailSheet(ex) },
           youtubeSearchUrl(ex) && { icon: 'play', label: t('Watch on YouTube'), sub: t('Opens a search for good form'), onClick: () => openExternal(youtubeSearchUrl(ex)) },
@@ -616,12 +622,13 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     const s = sets?.[i]
     if (!s || isWarmupRow(s) || isSideSet(s) || !(Number(s.w) > 0)) return
     const rir = rirOf(kind === 'rpe' ? { rpe: nv } : { rir: nv })
-    const r = autoRegulate(DEFAULT_TARGET_RIR, rir, s.w, loadStep)
+    const target = targetRirOf(useStore.getState().S.active?.entries[entryIdx]?.target)
+    const r = autoRegulate(target, rir, s.w, loadStep)
     if (r.action === 'keep') return
     const next = fmtNum(r.weight) + ' ' + S.unit
     const msg = r.action === 'decrease'
-      ? t('Harder than planned (RIR {0}, target {1}). Drop to {2}.', fmtNum(rir), DEFAULT_TARGET_RIR, next)
-      : t('Felt easy (RIR {0}, target {1}). Try {2}.', fmtNum(rir), DEFAULT_TARGET_RIR, next)
+      ? t('Harder than planned (RIR {0}, target {1}). Drop to {2}.', fmtNum(rir), target, next)
+      : t('Felt easy (RIR {0}, target {1}). Try {2}.', fmtNum(rir), target, next)
     useUI.getState().toast(msg, {
       action: t('Apply'),
       onAction: () => {
@@ -1593,6 +1600,7 @@ function ActiveWorkout() {
     onToggle: (i, onFocusProgress) => checkedToggle(idx, i, undefined, { onFocusProgress }),
     onToggleSide: (i, side, onFocusProgress) => checkedToggle(idx, i, side, { onFocusProgress }),
     onField: (i, f, v) => setField(idx, i, f, v),
+    onTargetRir: v => mutEntry(idx, en => { en.target = withTargetRir(en.target, v) }),
     onMutateSet: (i, fn) => mutEntry(idx, entry => { entry.sets[i] = fn(entry.sets[i]) }),
     onAddSet: () => addSet(idx),
     onRemoveSet: () => removeSet(idx),

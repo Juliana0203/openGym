@@ -3,9 +3,22 @@
 // with the suggestion. Weights are snapped to the loadable step (snapWeight), never below 0.
 import { snapWeight } from './progression.js'
 
-// The plan carries no per-set RIR yet, so every working set is judged against this one.
+// The RIR a plan asks for when an exercise has not picked its own.
 export const DEFAULT_TARGET_RIR = 2
+export const TARGET_RIRS = [0, 1, 2, 3, 4]
 const DEFAULT_STEP = 2.5
+
+/** The exercise's own target RIR (`cfg.targetRir`, 0 to 4), or the default when unset or invalid. */
+export function targetRirOf(cfg) {
+  const v = cfg?.targetRir
+  return typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 4 ? v : DEFAULT_TARGET_RIR
+}
+
+/** A config with `targetRir` set, or with the field removed when it is the default (keeps stored shapes small). */
+export function withTargetRir(cfg, rir) {
+  const { targetRir: _old, ...rest } = cfg || {}
+  return rir != null && rir !== DEFAULT_TARGET_RIR && TARGET_RIRS.includes(rir) ? { ...rest, targetRir: rir } : rest
+}
 const DROP_MIN = 0.05
 const DROP_MAX = 0.10
 const RAISE = 0.05
@@ -45,3 +58,6 @@ export function autoRegulate(targetRIR, actualRIR, weight, step = DEFAULT_STEP) 
   }
   return keep
 }
+
+/** autoRegulate against the exercise's own target RIR (cfg.targetRir), 2 when it has none. */
+export const autoRegulateFor = (cfg, actualRIR, weight, step) => autoRegulate(targetRirOf(cfg), actualRIR, weight, step)

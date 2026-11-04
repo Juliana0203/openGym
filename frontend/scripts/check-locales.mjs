@@ -48,7 +48,7 @@ let failed = false
 for (const [lang, dict] of locales) {
   const keys = new Set(Object.keys(dict))
   const missing = union.filter(k => !keys.has(k))
-  const orphans = union.filter(k => keys.has(k) && seen.get(k) === 1)
+  const orphans = locales.size > 1 ? union.filter(k => keys.has(k) && seen.get(k) === 1) : []
   // A blank value is worse than no translation: the English fallback only runs for a key that
   // is ABSENT, so an empty string reaches the screen as an empty screen.
   // A plural entry (tn()) answers with the forms of a language that needs more than two —

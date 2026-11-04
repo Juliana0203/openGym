@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { webauthnOK, bio, BIO, passkeyError, api } from './api.js'
-import de from '../locales/de.js'
+import es from '../locales/es.js'
 import { _setLangState } from './i18n-core.js'
 
 const originalPublicKeyCredential = window.PublicKeyCredential
@@ -180,8 +180,8 @@ describe('bio', () => {
   afterEach(() => _setLangState('en', {}, null, null))
   it('reads the platform phrase in the UI language', () => {
     expect(bio()).toBe(BIO)
-    _setLangState('de', { [BIO]: 'BIO-de' }, null, null)
-    expect(bio()).toBe('BIO-de')
+    _setLangState('es', { [BIO]: 'BIO-es' }, null, null)
+    expect(bio()).toBe('BIO-es')
   })
 })
 
@@ -191,11 +191,11 @@ describe('passkeyError', () => {
   afterEach(() => _setLangState('en', {}, null, null))
   const refused = (code, message) => Object.assign(new Error(message), { status: 400, data: { error: message, code } })
   it('says each refusal in the UI language', () => {
-    _setLangState('de', de, null, null)
-    expect(passkeyError(refused('invite', 'a valid invite code is required'), 'x')).toBe(de['That invite code is not valid.'])
-    expect(passkeyError(refused('unknown-credential', 'unknown passkey, create a profile first'), 'x')).toBe(de['This server doesn’t know that passkey. Make a profile first.'])
-    expect(passkeyError(refused('disabled', 'this account has been disabled'), 'x')).toBe(de['This account has been disabled.'])
-    expect(passkeyError(refused('challenge-expired', 'challenge expired, try again'), 'x')).toBe(de['That took a little too long. Give it another go.'])
+    _setLangState('es', es, null, null)
+    expect(passkeyError(refused('invite', 'a valid invite code is required'), 'x')).toBe(es['That invite code is not valid.'])
+    expect(passkeyError(refused('unknown-credential', 'unknown passkey, create a profile first'), 'x')).toBe(es['This server doesn’t know that passkey. Make a profile first.'])
+    expect(passkeyError(refused('disabled', 'this account has been disabled'), 'x')).toBe(es['This account has been disabled.'])
+    expect(passkeyError(refused('challenge-expired', 'challenge expired, try again'), 'x')).toBe(es['That took a little too long. Give it another go.'])
   })
   it('an answer without a code is shown as it came, and nothing at all falls back', () => {
     expect(passkeyError(refused(undefined, 'credential already registered'), 'Sign-in failed')).toBe('credential already registered')
@@ -210,11 +210,11 @@ describe('a write refused for the wrong address', () => {
   afterEach(() => { _setLangState('en', {}, null, null); vi.unstubAllGlobals() })
   const answer = (status, body) => vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })))
   it('says which address the server expects, in the UI language', async () => {
-    _setLangState('de', de, null, null)
+    _setLangState('es', es, null, null)
     answer(403, { error: 'cross-origin request refused', code: 'origin-mismatch', expected: 'http://localhost:8080' })
     const e = await api('/api/data', { method: 'PUT', body: '{}' }).catch(x => x)
     expect(e.status).toBe(403)
-    expect(e.message).toBe(de[KEY].replace('{0}', 'http://localhost:8080'))
+    expect(e.message).toBe(es[KEY].replace('{0}', 'http://localhost:8080'))
   })
   it('a passkey refused for the same reason says the same', () => {
     const e = Object.assign(new Error('Unexpected authentication response origin ...'), { status: 400, data: { code: 'origin-mismatch', expected: 'https://gym.example.com' } })

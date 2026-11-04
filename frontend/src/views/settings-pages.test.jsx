@@ -475,24 +475,20 @@ describe('searchSettings', () => {
   it('finds the translated choices of a row, and words of its own language', async () => {
     const { setLang, t } = await import('../lib/i18n.js')
     try {
-      await setLang('de')
+      await setLang('es')
       const first = q => searchSettings(q, guestWeb, t)[0]?.title
-      expect(first('Dunkel')).toBe('Theme')
-      expect(first('Feste Woche')).toBe('How you train')
-      expect(first('Wochenstart')).toBe('Week starts on')
-      expect(first('kompakt')).toBe('Layout')
-      expect(first('wischen')).toBe('Swipe actions')
-      expect(first('Geste')).toBe('Swipe actions')
-      await setLang('ar')
-      expect(searchSettings('تناوب', guestWeb, t).map(h => h.title)).toContain('How you train')
+      expect(first('Oscuro')).toBe('Theme')
+      expect(first('Semana fija')).toBe('How you train')
+      expect(first('empieza')).toBe('Week starts on')
+      expect(first('compacta')).toBe('Layout')
     } finally { await setLang('en') }
   })
 
   it('English words match from the start of a word only, so "ton" never finds "buttons"', async () => {
     const { setLang, t } = await import('../lib/i18n.js')
     try {
-      await setLang('de')
-      const titles = searchSettings('ton', guestWeb, t).map(h => h.title)
+      await setLang('es')
+      const titles = searchSettings('utt', guestWeb, t).map(h => h.title)
       expect(titles).not.toContain('Weight and reps buttons')
       expect(titles).not.toContain('Superset buttons in the exercise header')
     } finally { await setLang('en') }

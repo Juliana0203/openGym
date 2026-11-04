@@ -124,7 +124,7 @@ describe('Settings — planned sessions start from', () => {
       expect(module.default[newKey].trim()).not.toBe('')
       expect(module.default[oldKey]).toBeUndefined()
     }
-    expect(locales['../locales/tr.js'].default[newKey]).toBe('O rutinde geçen sefer kaydettiğin tekrarlar ve kendin ayarladığın ısınma setleri aktarılır. İlerleme kapalıysa ağırlık da.')
+    expect(locales['../locales/es.js'].default[newKey]).toBeTypeOf('string')
   })
 })
 

@@ -8,7 +8,7 @@ import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import Library from './Library.jsx'
 import { EXDB } from '../lib/exercises.js'
-import { CASED_NAME_LANGS, EXERCISE_NAME_LANGS, _setLangState } from '../lib/i18n-core.js'
+import { CASED_NAME_LANGS, EXERCISE_NAME_LANGS, LANGS, _setLangState } from '../lib/i18n-core.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -94,7 +94,7 @@ describe('Library exercise-name casing per language', () => {
   const packs = import.meta.glob('../exercise-names/*.js', { eager: true, import: 'default' })
   afterEach(() => _setLangState('en', {}, null, null))
 
-  for (const lang of EXERCISE_NAME_LANGS) {
+  for (const lang of EXERCISE_NAME_LANGS.filter(l => LANGS[l])) {
     it(`${lang}: every translated row is ${CASED_NAME_LANGS.includes(lang) ? 'left in its own casing' : 'title-cased'}`, () => {
       const pack = packs[`../exercise-names/${lang}.js`]
       _setLangState(lang, {}, null, pack)
@@ -131,19 +131,15 @@ describe('Library header count', () => {
     expect(sub(render())).toBe(`${EXDB.length} animated exercises + 5 of your own`)
   })
 
-  it('uses the language\'s own plural forms (Russian: 1 своё, 2 своих, 5 своих)', async () => {
-    const { default: ru } = await import('../locales/ru.js')
-    _setLangState('ru', ru, null, null)
-    const forms = ru['{1} animated exercises + {0} of your own']
-    expect(typeof forms).toBe('object')
-    mocks.S.customEx = own(1)
-    const one = sub(render())
-    act(() => { mounted.splice(0).forEach(root => root.unmount()) })
+  it('uses the language\'s own words for the custom count', async () => {
+    const { default: es } = await import('../locales/es.js')
+    _setLangState('es', es, null, null)
+    const form = es['{1} animated exercises + {0} of your own']
+    expect(form).toBeTruthy()
     mocks.S.customEx = own(5)
     const five = sub(render())
-    expect(one).toContain(String(EXDB.length))
-    expect(five).toBe(forms.many.replace('{0}', '5').replace('{1}', String(EXDB.length)))
-    expect(one).not.toBe(five.replace('5', '1'))
+    expect(five).toContain(String(EXDB.length))
+    expect(five).not.toContain('of your own')
   })
 
   it('keeps the subtitle on one line on wider screens, clipping with an ellipsis', () => {

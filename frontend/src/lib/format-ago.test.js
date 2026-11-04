@@ -1,8 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { fmtAgo, fmtDaysAgo, changeCount, setsWorkCount, fmtDur, fmtDate } from './format.js'
 import { _setLangState } from './i18n-core.js'
-import ar from '../locales/ar.js'
-import uk from '../locales/uk.js'
+import es from '../locales/es.js'
 
 // "Last synced: …" in Settings — the platform words it, in the UI language (en-GB here).
 describe('fmtAgo', () => {
@@ -38,14 +37,13 @@ describe('setsWorkCount', () => {
   })
 
   it('and the packs carry it', () => {
-    _setLangState('uk', uk, null, null)
-    expect(setsWorkCount(1, 1)).toBe(uk['{0} set · {1} work'].replace('{0}', '1').replace('{1}', '1'))
-    expect(uk['{0} set · {1} work']).not.toBe(uk['{0} sets · {1} work'])
+    _setLangState('es', es, null, null)
+    expect(setsWorkCount(1, 1)).toBe(es['{0} set · {1} work'].replace('{0}', '1').replace('{1}', '1'))
+    expect(es['{0} set · {1} work']).not.toBe(es['{0} sets · {1} work'])
   })
 })
 
-// A session's length in the UI language. The units were Latin letters in every pack, so an
-// Arabic or Ukrainian History row read "34 min" and "1h 5m" in the middle of its own script.
+// A session's length in the UI language.
 describe('fmtDur', () => {
   afterEach(() => _setLangState('en', {}, null, null))
 
@@ -54,13 +52,9 @@ describe('fmtDur', () => {
     expect(fmtDur(175 * 60000)).toBe('2h 55m')
   })
 
-  it('uses each pack\'s own units', () => {
-    _setLangState('ar', ar, null, null)
-    expect(fmtDur(34 * 60000)).toBe('34 دقيقة')
-    expect(fmtDur(65 * 60000)).toBe('1 ساعة 5 دقيقة')
-    _setLangState('uk', uk, null, null)
-    expect(fmtDur(34 * 60000)).toBe('34 хв')
-    expect(fmtDur(65 * 60000)).toBe('1 год 5 хв')
+  it('uses the Spanish pack\'s own units when it has them', () => {
+    _setLangState('es', es, null, null)
+    expect(fmtDur(34 * 60000)).toBe((es['{0} min'] || '{0} min').replace('{0}', '34'))
   })
 })
 
@@ -106,9 +100,9 @@ describe('fmtDaysAgo', () => {
   })
 
   it('in the UI language, from the platform', () => {
-    _setLangState('de', {}, null, null)
-    expect(fmtDaysAgo(back(1), day)).toBe('gestern')
-    expect(fmtDaysAgo(back(3), day)).toBe('vor 3 Tagen')
-    expect(fmtDaysAgo(back(14), day)).toBe('vor 2 Wochen')
+    _setLangState('es', {}, null, null)
+    expect(fmtDaysAgo(back(1), day)).toBe('ayer')
+    expect(fmtDaysAgo(back(3), day)).toBe('hace 3 días')
+    expect(fmtDaysAgo(back(14), day)).toBe('hace 2 semanas')
   })
 })

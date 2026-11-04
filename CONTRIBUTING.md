@@ -61,12 +61,10 @@ cd mcp && npm test
   same pull request; [the list is here](docs/ARCHITECTURE.md#code-that-exists-twice-on-purpose).
 - **Leave CHANGELOG.md alone.** Release notes are written at release time, from the merged pull
   requests.
-- **New UI strings go into every locale** in `frontend/src/locales/`. English is the source
-  language and has no file. `cd frontend && node scripts/check-locales.mjs` (run in CI) flags a
-  key that is missing, blank or has lost a `{n}` placeholder. Portuguese (Brazil) inherits from
-  Portuguese (Portugal) and has its own guard test: a new Portuguese string either gets a Brazilian
-  override or is accepted as shared, then `node scripts/pt-br-inheritance-fingerprint.mjs` prints
-  the numbers the test expects.
+- **New UI strings go into the Spanish locale** in `frontend/src/locales/es.js`. The app ships
+  English and Spanish only. English is the source language and has no file.
+  `cd frontend && node scripts/check-locales.mjs` (run in CI) flags a key that is missing, blank
+  or has lost a `{n}` placeholder.
 
 ## Using AI tools
 

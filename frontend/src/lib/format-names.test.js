@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { exerciseNameText } from './format.js'
 import { _setLangState } from './i18n-core.js'
-import de from '../exercise-names/de.js'
 import es from '../exercise-names/es.js'
 
 // A toast, a dialog title, the timed-set label and the Stats picker show an exercise name as
@@ -22,10 +21,6 @@ describe('exerciseNameText', () => {
     expect(exerciseNameText(bench)).toBe('Press De Banca Con Barra (Barbell Bench Press)')
   })
 
-  it('leaves German as the pack writes it', () => {
-    _setLangState('de', {}, null, de, false)
-    expect(exerciseNameText(bench)).toBe('Bankdrücken mit Langhantel')
-  })
 })
 
 // QA 1.3.9: the accent swatches' screen-reader names were the internal keys ("lime", "sky").

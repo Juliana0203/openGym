@@ -5,22 +5,22 @@
 import { describe, expect, it, vi } from 'vitest'
 
 const log = vi.hoisted(() => [])
-vi.mock('../locales/de.js', async () => {
+vi.mock('../locales/es.js', async () => {
   log.push('words')
   await new Promise(r => setTimeout(r, 30))
   log.push('words done')
-  return { default: { Plan: 'Plan (de)' } }
+  return { default: { Plan: 'Plan (es)' } }
 })
-vi.mock('../instr/de.js', () => { log.push('steps'); return { default: {} } })
-vi.mock('../exercise-names/de.js', () => { log.push('names'); return { default: {} } })
+vi.mock('../instr/es.js', () => { log.push('steps'); return { default: {} } })
+vi.mock('../exercise-names/es.js', () => { log.push('names'); return { default: {} } })
 
 import { setLang, t, getLang } from './i18n.js'
 
 describe('setLang', () => {
   it('fetches the language packs side by side', async () => {
-    await setLang('de')
-    expect(getLang()).toBe('de')
-    expect(t('Plan')).toBe('Plan (de)')
+    await setLang('es')
+    expect(getLang()).toBe('es')
+    expect(t('Plan')).toBe('Plan (es)')
     expect(log.indexOf('steps')).toBeGreaterThan(-1)
     expect(log.indexOf('names')).toBeGreaterThan(-1)
     expect(log.indexOf('steps')).toBeLessThan(log.indexOf('words done'))

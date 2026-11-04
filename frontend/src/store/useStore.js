@@ -165,6 +165,8 @@ export const DEF = {
   // every profile written before this setting existed keeps the week it has been looking at.
   // See lib/format.js: nothing reads this field directly, everything goes through the helpers.
   weekStart: 1,
+  // Optional 'male' | 'female' | 'other' (lib/gender.js). null means not set.
+  gender: null,
   // Decimals on displayed weights: 1 by default, 2 for anyone loading quarter plates or
   // microplates (issue #139). Display only — nothing is stored or rounded differently.
   wdec: 1,

@@ -20,21 +20,19 @@ describe('print-doc', () => {
 
   it('builds the page-number line from the translation, numbers anywhere in it', () => {
     expect(pageNumberContent()).toBe('"Page " counter(page) " of " counter(pages)')
-    _setLangState('ko', { 'Page {0} of {1}': '{1}쪽 중 {0}쪽' }, null, null)
-    expect(pageNumberContent()).toBe('counter(pages) "쪽 중 " counter(page) "쪽"')
-    _setLangState('de', { 'Page {0} of {1}': 'Seite "{0}" \\ {1}' }, null, null)
-    expect(pageNumberContent()).toBe('"Seite \\"" counter(page) "\\" \\\\ " counter(pages)')
+    _setLangState('es', { 'Page {0} of {1}': '{1} pág. de {0}' }, null, null)
+    expect(pageNumberContent()).toBe('counter(pages) " pág. de " counter(page)')
+    _setLangState('es', { 'Page {0} of {1}': 'Pág "{0}" \\ {1}' }, null, null)
+    expect(pageNumberContent()).toBe('"Pág \\"" counter(page) "\\" \\\\ " counter(pages)')
   })
 
-  it('a page: logo, title, facts, owner and date, right to left in Arabic', () => {
+  it('a page: logo, title, facts, owner and date', () => {
     const html = printShell({ title: 'Leg <day>', kicker: 'Routine', facts: ['3 exercises', '', 'x'], owner: 'Ana', date: '2026-10-15', body: '<p>b</p>' })
     expect(html).toContain(LOGO_SVG)
     expect(html).toContain('<title>Leg &lt;day&gt;</title>')
     expect(html).toContain('<div class="facts">3 exercises<span class="dot">·</span>x</div>')
     expect(html).toContain('<b>Ana</b>')
     expect(html).toContain('dir="ltr"')
-    _setLangState('ar', {}, null, null)
-    expect(printShell({ title: 't', body: '' })).toContain('dir="rtl"')
   })
 
   it('probe marks only when asked', () => {

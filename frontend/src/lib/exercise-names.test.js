@@ -4,7 +4,7 @@ import { EXDB } from './exercises-data.js'
 import V13_IDS from './catalogue-v13-ids.json' with { type: 'json' }
 import { checkName, stagedExercises } from '../../../scripts/de-name-rules.mjs'
 import {
-  EXERCISE_NAME_LANGS, RTL_LANGS, _setLangState, derivePack, exerciseNameFor, exerciseNameSearchText
+  EXERCISE_NAME_LANGS, LANGS as APP_LANGS, RTL_LANGS, _setLangState, derivePack, exerciseNameFor, exerciseNameSearchText
 } from './i18n-core.js'
 
 // Every translated-name pack, checked the same way. The packs are generated from
@@ -222,7 +222,7 @@ test('the movement rule fires in both directions', () => {
     .toContainEqual({ rule: 'movement', fix: 'Write \"Beinbeugen\" in \"Liegendes Beinstrecken an der Hebelmaschine\": a leg curl bends the knee, and \"Beinstrecken\" is the leg extension.' })
 })
 
-for (const lang of EXERCISE_NAME_LANGS) {
+for (const lang of EXERCISE_NAME_LANGS.filter(l => APP_LANGS[l])) {
   describe(`${lang} exercise names`, () => {
     const pack = packs[`../exercise-names/${lang}.js`]
     const rules = LANGS[lang] || {}
@@ -324,16 +324,3 @@ for (const lang of EXERCISE_NAME_LANGS) {
     }
   })
 }
-
-// de-CH derives from the German pack by replacing ß with ss, so the base pack must be the ß one
-// or the Swiss locale derives nothing. A name written with ss there would pass every other test.
-test('de-CH derives the Swiss spelling from the German pack', () => {
-  const de = packs['../exercise-names/de.js']
-  const withSharpS = Object.entries(de).filter(([, name]) => name.includes('ß'))
-  expect(withSharpS.length).toBeGreaterThan(0)
-  const swiss = derivePack('de-CH', de)
-  for (const [id, name] of withSharpS) {
-    expect(swiss[id], id).toBe(name.replaceAll('ß', 'ss'))
-    expect(swiss[id], id).not.toContain('ß')
-  }
-})

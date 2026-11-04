@@ -120,6 +120,8 @@ function cleanEx(e) {
   if (isBackoff(e)) o.backoff = true
   // "Last set to failure" is how the exercise is prescribed too; only when on, never on cardio.
   if (e.lastToFailure === true && mode !== 'cardio') o.lastToFailure = true
+  // The RIR the exercise aims for (lib/autoRegulation.js); only when it is not the default 2.
+  if (mode === 'reps' && e.targetRir != null && e.targetRir !== 2) o.targetRir = e.targetRir
   // Epley deload factor is a per-occurrence progression setting. Omit the default so older
   // exports remain compact and importing them preserves the default 90% behaviour.
   if (e.deloadFactor != null && Number(e.deloadFactor) !== 0.9) o.deloadFactor = e.deloadFactor

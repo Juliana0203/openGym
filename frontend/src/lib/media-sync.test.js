@@ -104,11 +104,11 @@ describe('syncMedia', () => {
     apiUpload.mockRejectedValue(Object.assign(new Error('full'), { status: 413, code: 'media-quota', data: { usedMB: 0.1, quotaMB: 1 } }))
     await make(appStore({ S })).syncMedia()
     expect(toast).toHaveBeenCalledWith('Your photo and video space on the server is full (0.1 of 1 MB).')
-    _setLangState('de', { 'Your photo and video space on the server is full ({0} of {1} MB).': 'Voll ({0} von {1} MB).' }, null, null)
+    _setLangState('es', { 'Your photo and video space on the server is full ({0} of {1} MB).': 'Lleno ({0} de {1} MB).' }, null, null)
     try {
       toast.mockClear()
       await make(appStore({ S })).syncMedia()
-      expect(toast).toHaveBeenCalledWith('Voll (0,1 von 1 MB).')
+      expect(toast).toHaveBeenCalledWith('Lleno (0,1 de 1 MB).')
     } finally { _setLangState('en', null, null, null) }
   })
 

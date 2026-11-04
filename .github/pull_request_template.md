@@ -13,6 +13,6 @@
 
 ### Checklist
 - [ ] Tests added or updated (`cd frontend && npm test`, `cd api && npm test`)
-- [ ] New UI text goes through `t()` and is in every locale pack (`node scripts/check-locales.mjs`)
+- [ ] New UI text goes through `t()` and is in the Spanish locale pack (`node scripts/check-locales.mjs`)
 - [ ] Screenshots or a short clip for UI changes (no exercise animations in them, please)
 - [ ] I signed the [CLA](../CLA.md) (the bot asks on your first PR)

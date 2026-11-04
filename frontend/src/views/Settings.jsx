@@ -59,6 +59,7 @@ import { passwordOn, PasswordRow, openPasswordSignIn, openPasswordRegister } fro
 import { usePasskeys, PasskeysRow, DeviceLinkRow, openDeviceLinkRedeem, PairSheet } from '../components/Passkeys.jsx'
 import { DeleteAccountRow } from '../components/DeleteAccount.jsx'
 import { warmupAutoOf } from '../lib/warmup-ramp.js'
+import { genderOf } from '../lib/gender.js'
 import { Section, Row, SelectRow, Switch, Segmented, Button, TextField, SearchField } from '../components/ui.jsx'
 import { POLICIES_FOR, POLICY_NAME, POLICY_DESC, profileRule } from '../lib/progression.js'
 import { PAGES, ROOT_GROUPS, pageVisible, searchSettings, pageTrail } from './settings-pages.js'
@@ -839,6 +840,10 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             options={[{ value: MONDAY, label: t('Monday') }, { value: SUNDAY, label: t('Sunday') }]}
             value={weekStartOf(S)} onChange={v => update(s => { s.weekStart = v })} />
         </Row>
+        <SelectRow icon="target" iconTint="var(--blue)" title={t('Gender')} value={genderOf(S) || ''}
+          onChange={v => update(s => { s.gender = v || null })}
+          options={[{ value: '', label: t('Not set') }, { value: 'male', label: t('Male') },
+            { value: 'female', label: t('Female') }, { value: 'other', label: t('Non-binary or other') }]} />
       </Section>
       <Section>
         {/* The target range of weekly sets for each main muscle (lib/muscle-targets.js). */}

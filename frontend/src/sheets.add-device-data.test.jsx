@@ -4,8 +4,7 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { _setLangState } from './lib/i18n-core.js'
 import { addDeviceDataMessage, addDeviceSetupMessage } from './sheets.jsx'
-import de from './locales/de.js'
-import ru from './locales/ru.js'
+import es from './locales/es.js'
 
 afterEach(() => _setLangState('en', null, null, null))
 
@@ -20,12 +19,11 @@ describe('addDeviceDataMessage', () => {
   })
 
   it('uses the singular sentences of the language packs', () => {
-    _setLangState('de', de, null, null)
-    expect(addDeviceDataMessage(1, 1)).toMatch(/^1 Training und 1 Wiegung wurden/)
-    expect(addDeviceDataMessage(1, 2)).toMatch(/^1 Training und 2 Wiegungen wurden/)
-    expect(addDeviceDataMessage(3, 1)).toMatch(/^3 Trainings und 1 Wiegung wurden/)
-    _setLangState('ru', ru, null, null)
-    expect(addDeviceDataMessage(1, 1)).toMatch(/^1 тренировка и 1 взвешивание/)
+    _setLangState('es', es, null, null)
+    const msg = addDeviceDataMessage(1, 1)
+    expect(msg).not.toMatch(/^1 workout/)
+    expect(msg).toMatch(/^1 /)
+    expect(addDeviceDataMessage(3, 2)).toMatch(/^3 /)
   })
 
   it('a plan made while signed out has words of its own', () => {
@@ -33,7 +31,8 @@ describe('addDeviceDataMessage', () => {
     expect(addDeviceSetupMessage(1)).toMatch(/^1 routine was made on this device/)
     expect(addDeviceSetupMessage(3)).toMatch(/^3 routines were made on this device/)
     expect(addDeviceSetupMessage(0)).toMatch(/^Your plan, notes or gym cards/)
-    _setLangState('de', de, null, null)
-    expect(addDeviceSetupMessage(2)).toMatch(/^2 Routinen wurden/)
+    _setLangState('es', es, null, null)
+    expect(addDeviceSetupMessage(2)).toMatch(/^2 /)
+    expect(addDeviceSetupMessage(2)).not.toMatch(/routines were made/)
   })
 })

@@ -49,7 +49,7 @@ describe('Settings → Siri & Shortcuts', () => {
   const bare = s => s.replace(/^[“„«「”]\s?|\s?[”“»」]$/g, '')
 
   it('shows the phrases Siri listens for, in the page’s language', async () => {
-    for (const lang of LPROJ) {
+    for (const lang of LPROJ.filter(l => (PAGE_LOCALE[l] || l) === 'es')) {
       const loc = PAGE_LOCALE[lang] || lang
       const { default: pack } = await import(`../locales/${loc}.js`)
       for (const [key, phrase] of Object.entries(rows)) {

@@ -9,15 +9,16 @@ const ex = { id: '9999', st: [] }
 
 describe('a language switch while the details load', () => {
   it('keeps the descriptions of one language from landing under another', () => {
-    core._setLangState('de', {}, null, null, true, false)
-    expect(core._setDetails({ 9999: ['Lift.'] }, { 9999: 'A lift.' }, { 9999: 'Ein Heben.' }, 'de')).toBe(true)
-    expect(core.descFor(ex)).toBe('Ein Heben.')
-    core._setLangState('fr', {}, null, null, true, false)
-    // German descriptions that finished loading after the switch to French
-    expect(core._setDetails({ 9999: ['Lift.'] }, { 9999: 'A lift.' }, { 9999: 'Ein Heben.' }, 'de')).toBe(false)
-    expect(core.descFor(ex)).not.toBe('Ein Heben.')
+    core._setLangState('es', {}, null, null, true, false)
+    expect(core._setDetails({ 9999: ['Lift.'] }, { 9999: 'A lift.' }, { 9999: 'Un levante.' }, 'es')).toBe(true)
+    expect(core.descFor(ex)).toBe('Un levante.')
+    core._setLangState('en', {}, null, null, true, false)
+    // Spanish descriptions that finished loading after the switch to English
+    expect(core._setDetails({ 9999: ['Lift.'] }, { 9999: 'A lift.' }, { 9999: 'Un levante.' }, 'es')).toBe(false)
+    expect(core.descFor(ex)).not.toBe('Un levante.')
     expect(core.instrFor(ex)).toEqual(['Lift.'])   // the English steps are every language's
-    expect(core._setDetails(null, null, { 9999: 'Un levé.' }, 'fr')).toBe(true)
-    expect(core.descFor(ex)).toBe('Un levé.')
+    core._setLangState('es', {}, null, null, true, false)
+    expect(core._setDetails(null, null, { 9999: 'Otro levante.' }, 'es')).toBe(true)
+    expect(core.descFor(ex)).toBe('Otro levante.')
   })
 })
