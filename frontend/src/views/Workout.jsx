@@ -39,6 +39,7 @@ import { afterScrollRestore, scrollRestorePending } from '../components/Modals.j
 import { effortColor, rirOf, EFFORT_PRESETS } from '../lib/effort.js'
 import { autoRegulate, targetRirOf, withTargetRir, TARGET_RIRS } from '../lib/autoRegulation.js'
 import Elapsed from '../components/Elapsed.jsx'
+import MotivationLine from '../components/MotivationLine.jsx'
 import LiveHeartRate from '../components/LiveHeartRate.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button, Check, NumberField } from '../components/ui.jsx'
@@ -1755,7 +1756,7 @@ function ActiveWorkout() {
       },
     })
   }
-  const openGymMenu = () => menuSheet({
+  const NEXUSMenu = () => menuSheet({
     title: t('Gym'),
     items: gyms.map(g => ({ icon: 'house', label: gymLabel(g), on: g.id === gymNow?.id, onClick: () => askSwitchGym(g) })),
   })
@@ -1782,7 +1783,7 @@ function ActiveWorkout() {
       { more: [{ items: [
         !editing && { icon: 'clipboard', label: t('Add routine'), sub: t('Bring another routine into this session'), onClick: addRoutineToSessionSheet },
         { icon: 'pencil', label: t('Rename workout'), onClick: renameWorkoutSheet },
-        gymSwitchable && { icon: 'house', label: t('Gym'), sub: gymNow ? gymLabel(gymNow) : t('Pick a gym'), onClick: openGymMenu },
+        gymSwitchable && { icon: 'house', label: t('Gym'), sub: gymNow ? gymLabel(gymNow) : t('Pick a gym'), onClick: NEXUSMenu },
         noProgSwitchable && { icon: 'chartLineSlash', label: t('Don’t count for progression'), sub: t('Every exercise in this workout'), on: sessionNoProg(A), onClick: toggleSessionNoProg },
       ] }] },
     ],
@@ -2436,7 +2437,7 @@ function ActiveWorkout() {
         ? <button className="iconbtn" aria-label={t('Close editor')} title={t('Close editor')} onClick={() => exitWorkoutEdit()}><Icon name="xmark" /></button>
         : <button className="iconbtn" aria-label={t('Minimize')} title={t('Minimize')} onClick={() => nav('/home')}><Icon name="chevronDown" /></button>}
       <div className="whdr-mid"><div className="whdr-name">{A.name}</div><div className="sub">{(A.backfill || editing) ? fmtDate(A.d, true) : <Elapsed start={A.start} />} · {t('{0} sets', done + '/' + total)}{!(A.backfill || editing) && isOn(S, 'health') && <LiveHeartRate />}</div>{gymShown && (gymSwitchable
-        ? <button type="button" className="whdr-gym" onClick={openGymMenu} aria-label={t('Gym: {0}', gymShown)}><Icon name="house" />{gymShown}</button>
+        ? <button type="button" className="whdr-gym" onClick={NEXUSMenu} aria-label={t('Gym: {0}', gymShown)}><Icon name="house" />{gymShown}</button>
         : <span className="whdr-gym"><Icon name="house" />{gymShown}</span>)}</div>
       {!chipRow && sessionMap}
       <button className="iconbtn" data-tour="workout-more" aria-label={t('Workout options')} title={t('Workout options')} onClick={openViewMenu}><Icon name="more" /></button>
@@ -2450,6 +2451,7 @@ function ActiveWorkout() {
       ? <div className="wprog-row"><div className="wprog"><i style={{ width: (total ? done / total * 100 : 0) + '%' }} /></div>
         <span className="wvol" data-session-volume>{fmtVol(vol, S.unit)}</span></div>
       : <div className="wprog"><i style={{ width: (total ? done / total * 100 : 0) + '%' }} /></div>}
+    {!editing && !A.backfill && <MotivationLine S={S} active={A} done={done} total={total} />}
     {/* In the list the chips ride in the pinned header, so any exercise is one tap away from
         anywhere in a long stack. */}
     {listMode && chipRow}

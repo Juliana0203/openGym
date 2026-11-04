@@ -689,7 +689,7 @@ function ImportSummary({ parsed, close }) {
     </div>}
     {/* A Liftosaur plan's progression is a script; it arrives as a note on each exercise. */}
     {plans?.scripted > 0 && <div className="small dim" style={{ marginBottom: 10 }}>
-      {t('Liftoscript progressions come along as notes on the exercises. openGym doesn’t run them.')}
+      {t('Liftoscript progressions come along as notes on the exercises. NEXUS doesn’t run them.')}
     </div>}
     {plans && newPlans < plans.routines.length && <div className="small dim" style={{ marginBottom: 10 }}>
       {tn('{0} routine is already here and will be left alone.', '{0} routines are already here and will be left alone.', plans.routines.length - newPlans)}

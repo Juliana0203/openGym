@@ -1203,6 +1203,8 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .wprog i{display:block;height:100%;background:var(--acc);border-radius:99px;transition:width var(--med) var(--ease)}
 /* The bar with the session's volume at its end (#774): 12 px tall where the bar is 4, so it takes
    8 px less margin and the header keeps the exact height it has without it. */
+.wmotive{display:flex;justify-content:space-between;gap:12px;margin:0 0 8px;opacity:.85}
+.wmotive-streak{white-space:nowrap;color:var(--accent,inherit)}
 .wprog-row{display:flex;align-items:center;gap:8px;height:12px;margin-bottom:8px}
 .wprog-row .wprog,.whdr.stick .wprog-row .wprog{flex:1;min-width:0;margin-bottom:0}
 .whdr.stick .wprog-row{margin-bottom:2px}

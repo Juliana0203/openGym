@@ -107,7 +107,7 @@ function DeviceConfirm({ onConfirmed }) {
     if (busy) return
     setBusy(true); setErr(null)
     try {
-      const r = await confirmDeviceOwner(t('Confirm it’s you to delete your openGym account'))
+      const r = await confirmDeviceOwner(t('Confirm it’s you to delete your NEXUS account'))
       if (r !== 'ok' && r !== 'none') { setErr(t('Not confirmed on this phone. Nothing was deleted.')); return }
       await onConfirmed()
     } catch (e) { setErr(deleteAccountError(e)) }

@@ -14,7 +14,7 @@ import { Button } from './ui.jsx'
 const STEPS = () => [
   ['fingerprint', t('Your passkey may be synced'), t('Passkeys kept in iCloud Keychain, Google Password Manager or a password manager are on your other devices too. Try “Sign in with passkey” there.')],
   ['qr', t('Another device still signed in?'), t('On that one, open Settings → Account → Add another device, then enter its code here with “I have a code”.')],
-  ['person', t('Ask your admin'), t('Whoever runs your openGym server can make you a recovery code in the admin dashboard. Enter it with “I have a code”, and this device gets a new passkey.')],
+  ['person', t('Ask your admin'), t('Whoever runs your NEXUS server can make you a recovery code in the admin dashboard. Enter it with “I have a code”, and this device gets a new passkey.')],
   ['wrench', t('Running the server yourself?'), t('Get a recovery code for any profile, the owner’s too, on the server: docker compose exec api node recover.js "Your name"')],
 ]
 
