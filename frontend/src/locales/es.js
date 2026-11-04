@@ -2238,7 +2238,7 @@ export default {
   'With your API key': 'Con tu clave API',
   'Withdraw': 'Retirar',
   'Withdrawn. The Coach will ask before it sends anything again.': 'Retirado. El entrenador preguntará antes de volver a enviar nada.',
-  'Your answers to the Coach: goal, days, equipment, limits and injuries': 'Tus respuestas al entrenador: objetivo, días, equipo, limitaciones y lesiones',
+  'Your answers to the Coach and your basic profile: age, height, goal, experience, limits and injuries': 'Tus respuestas al entrenador y tu perfil básico: edad, altura, objetivo, experiencia, limitaciones y lesiones',
   'Your body weight and goal weight': 'Tu peso corporal y tu peso objetivo',
   'Your data, your call': 'Tus datos, tu decisión',
   'Your name, email and sign-in stay put. {0} handles the rest under its own privacy terms.': 'Tu nombre, tu correo y tu inicio de sesión se quedan aquí. {0} trata el resto según su propia política de privacidad.',

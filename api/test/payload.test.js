@@ -428,3 +428,37 @@ test('the app\'s active equipment profile stands in when the Coach was told no e
   S.coach.profile.equipment = ['barbell'];
   assert.deepEqual(payload.build(S, { handle: handleFor('u1'), kind: 'create' }).coachProfile.equipment, ['barbell']);
 });
+
+test('baseline carries the setup survey, bounded, with age instead of birth year', () => {
+  const S = sampleState({
+    gender: 'female', birthYear: new Date().getFullYear() - 30, height: 168, experience: 'advanced',
+    activityLevel: 'moderate', bodyType: 'hacker', trainingGoal: 'strength', daysAvailable: 4,
+    injuries: ['knee', 'lower_back', 'plague'], injuriesNote: 'old tweak',
+    bodyweight: [{ d: '2026-01-01', w: 70 }, { d: '2026-03-01', w: 68.5 }]
+  });
+  const b = payload.build(S, { handle: handleFor('u'), kind: 'review' }).baseline;
+  assert.equal(b.gender, 'female');
+  assert.equal(b.age, 30);
+  assert.equal(b.heightCm, 168);
+  assert.equal(b.goal, 'strength');
+  assert.equal(b.bodyType, undefined, 'an unknown word is dropped');
+  assert.deepEqual(b.injuries, ['knee', 'lower_back']);
+  assert.equal(b.startWeight.w, 70);
+  assert.equal(b.currentWeight.w, 68.5);
+  assert.ok(!JSON.stringify(b).includes('birthYear'));
+});
+
+test('baseline is absent when the survey was never answered', () => {
+  const p = payload.build(sampleState({ gender: undefined, height: undefined, bodyweight: [] }), { handle: handleFor('u'), kind: 'review' });
+  assert.equal(p.baseline, undefined);
+});
+
+test('effortHistory averages RIR (or 10 - RPE) over done working sets only', () => {
+  const sets = [{ done: true, rir: 1 }, { done: true, rir: 0 }, { done: true, rpe: 8 }, { done: false, rir: 4 }, { done: true }];
+  const e = payload.effortHistory({ routines: [] }, [{ entries: [{ id: '0043', sets }] }]);
+  assert.equal(e.ratedSets, 3);
+  assert.equal(e.atFailure, 1);
+  assert.equal(e.avgRir, 1);
+  assert.equal(e.exercises[0].targetRir, 2);
+  assert.equal(payload.effortHistory({ routines: [] }, []), null);
+});

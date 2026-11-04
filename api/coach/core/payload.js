@@ -213,6 +213,8 @@ function cleanEx(e) {
   // repsMax is the ceiling that turns "+1 rep forever" into "add a set and start over"; without
   // it the Coach cannot see, or propose, how a bodyweight exercise is meant to progress.
   put('repsMax', e.repsMax);
+  // The RIR this exercise is meant to be taken to (Settings and the exercise sheet); absent is the app's 2.
+  if (Number.isInteger(e.targetRir) && e.targetRir >= 0 && e.targetRir <= 4) o.targetRir = e.targetRir;
   // Triple progression's set ceiling: `sets` is where its cycle starts, `setsMax` where it ends.
   put('setsMax', e.setsMax);
   // Written out only when they disagree with the catalogue, matching plan-share.js — an
@@ -353,6 +355,73 @@ export function cleanPlan(S, now) {
 
 // The catalogue lives in library.js; re-exported so older imports keep resolving.
 export { LIBRARY, MAX_LIBRARY, libraryHas, libraryName, librarySlice, isStretch };
+
+/* ---------- the baseline profile (Settings > Your profile, frontend/src/lib/profile.js) ----------
+   What the setup survey saved on the state itself, read by name like every other field: the
+   words are the enums the app writes, the numbers are clamped, the free text is cut. Age is sent,
+   never the year of birth. The Coach's own intake answers stay in `coachProfile`; this is the
+   body and the context behind them, so a review reads "advanced, sore knees, cutting" instead
+   of guessing. Each field only when it was answered; null when none was. */
+const BASELINE_ENUMS = {
+  gender: ['male', 'female', 'other'],
+  activityLevel: ['sedentary', 'moderate', 'active'],
+  bodyType: ['slim_hard_to_gain', 'easy_to_gain', 'athletic_balanced'],
+  experience: ['beginner', 'intermediate', 'advanced']
+};
+const BASELINE_GOALS = ['lose_weight', 'maintain', 'bulking', 'strength'];
+const BASELINE_INJURIES = ['neck', 'shoulder', 'elbow', 'wrist', 'lower_back', 'hip', 'knee', 'ankle'];
+export function baselineOf(S, now) {
+  const out = {};
+  for (const [k, allowed] of Object.entries(BASELINE_ENUMS)) if (allowed.includes(S[k])) out[k] = S[k];
+  if (BASELINE_GOALS.includes(S.trainingGoal)) out.goal = S.trainingGoal;
+  const year = new Date(now).getFullYear();
+  const age = Number.isFinite(Number(S.birthYear)) && Number(S.birthYear) > 0 ? year - Number(S.birthYear) : NaN;
+  if (age >= 10 && age <= 100) out.age = age;
+  const height = Number(S.height);
+  if (height >= 100 && height <= 250) out.heightCm = Math.round(height * 10) / 10;
+  const days = count(S.daysAvailable, 2, 5);
+  if (days) out.daysAvailable = days;
+  const injuries = list(S.injuries).filter(a => BASELINE_INJURIES.includes(a));
+  if (injuries.length) out.injuries = [...new Set(injuries)];
+  const note = text(S.injuriesNote, PROFILE_TEXT_MAX.limitations);
+  if (note) out.injuriesNote = note;
+  // The first and the latest weigh-in: where the body started and where it is, in the profile's unit.
+  const dated = list(S.bodyweight).filter(b => b && day(b.d) && num(b.w) !== undefined && Number(b.w) > 0)
+    .sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : 0));
+  if (dated.length) {
+    out.startWeight = { d: day(dated[0].d), w: Number(dated[0].w) };
+    if (dated.length > 1) out.currentWeight = { d: day(dated[dated.length - 1].d), w: Number(dated[dated.length - 1].w) };
+  }
+  return Object.keys(out).length ? out : null;
+}
+
+/* The effort history of a window: how many working sets carried a RIR (or an RPE, read as
+   10 - RPE), the average, and per exercise the average against the exercise's own target RIR.
+   Gives the Coach the trend in one line instead of making it add up every set. */
+export const EFFORT_EXERCISES = 12;
+export function effortHistory(S, workouts) {
+  const per = new Map();
+  let rated = 0, sum = 0, failures = 0;
+  for (const w of workouts) for (const en of list(w?.entries)) for (const s of list(en?.sets)) {
+    if (!s || !s.done || isWarmupSet(s)) continue;
+    const rir = Number.isFinite(Number(s.rir)) && s.rir !== null && s.rir !== '' ? Number(s.rir)
+      : Number.isFinite(Number(s.rpe)) && s.rpe !== null && s.rpe !== '' ? Math.max(0, 10 - Number(s.rpe)) : null;
+    if (rir === null || rir < 0 || rir > 10) continue;
+    rated++; sum += rir; if (rir === 0) failures++;
+    const id = ident(en.id);
+    const cur = per.get(id) || { n: 0, sum: 0 };
+    cur.n++; cur.sum += rir; per.set(id, cur);
+  }
+  if (!rated) return null;
+  const target = id => {
+    const cfg = list(S.routines).flatMap(r => list(r?.ex)).find(e => e && e.id === id);
+    return Number.isInteger(cfg?.targetRir) && cfg.targetRir >= 0 && cfg.targetRir <= 4 ? cfg.targetRir : 2;
+  };
+  const round = n => Math.round(n * 10) / 10;
+  const exercises = [...per.entries()].sort((a, b) => b[1].n - a[1].n).slice(0, EFFORT_EXERCISES)
+    .map(([id, v]) => ({ id, name: LIB_BY_ID.get(id)?.n || null, rated: v.n, avgRir: round(v.sum / v.n), targetRir: target(id) }));
+  return { ratedSets: rated, avgRir: round(sum / rated), atFailure: failures, exercises };
+}
 
 /* ---------- effort scale (mirrors history.js effortOf) ---------- */
 const effortOf = S => {
@@ -626,6 +695,8 @@ export function build(S, opts = {}) {
     coachProfile: profile && typeof profile === 'object' ? cleanProfile(profile) : null,
     plan: cleanPlan(S, now)
   };
+  const baseline = baselineOf(S, now);
+  if (baseline) p.baseline = baseline;
   // The newer picture (core/context.js): weekly sets and recovery per muscle, the active gym's
   // loading, this month's challenges. Each only when there is something in it; a debrief reads
   // one session and gets none of it.
@@ -698,6 +769,8 @@ export function build(S, opts = {}) {
       workouts: workouts.map((w, i) => (i >= detailFrom ? cleanWorkout(w) : compactWorkout(w)))
     };
     p.aggregates = aggregates(S, workouts);
+    const effort = effortHistory(S, workouts);
+    if (effort) p.effort = effort;
     const today = cleanToday(opts.today);
     if (today) p.today = today;
   } else if (opts.kind === 'adapt') {
@@ -730,6 +803,8 @@ export function build(S, opts = {}) {
       workouts: workouts.map((w, i) => (i >= detailFrom ? cleanWorkout(w) : compactWorkout(w)))
     };
     p.aggregates = aggregates(S, workouts);
+    const effort = effortHistory(S, workouts);
+    if (effort) p.effort = effort;
     p.bodyweight = { goal: num(S.targetW) ?? null, ...dailyOf(S), series: weighIns(S, p.window.from, null) };
     if (opts.note) p.userNote = String(opts.note).slice(0, MAX_NOTE_CHARS);
     if (opts.cohort) p.cohort = cleanCohort(opts.cohort);

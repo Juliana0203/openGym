@@ -21,7 +21,7 @@ const LINES = {
   plan: () => t('Your plan: routines, exercises, sets, reps and schedule'),
   training: () => t('Your workouts: weights, reps, times, effort and session notes'),
   bodyweight: () => t('Your body weight and goal weight'),
-  profile: () => t('Your answers to the Coach: goal, days, equipment, limits and injuries'),
+  profile: () => t('Your answers to the Coach and your basic profile: age, height, goal, experience, limits and injuries'),
   prefs: () => t('Your unit and language')
 }
 export const sharedLines = () => [...DATA_CATEGORIES.map(k => LINES[k]?.()).filter(Boolean), t('Anything you type to the Coach')]
