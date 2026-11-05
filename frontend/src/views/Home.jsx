@@ -31,6 +31,7 @@ import { SeasonDeco } from '../components/Seasonal.jsx'
 import { WrappedHomeCard } from '../components/WrappedEntry.jsx'
 import RecoveryHint from '../components/RecoveryHint.jsx'
 import RestDayNeat from '../components/RestDayNeat.jsx'
+import Spark from '../components/Spark.jsx'
 import { ChallengesCard } from '../components/Challenges.jsx'
 import { isOn } from '../lib/modules.js'
 
@@ -196,6 +197,8 @@ export default function Home() {
 
     {/* Rest day: light-activity pills so the day is recovery, not sedentary (lib/neat.js). */}
     {!S.active && !todayRoutines.length && !doneToday && <RestDayNeat S={S} />}
+    {/* A line of motivation: the rest-day one on a rest day, the start-of-day one before a session. */}
+    {!S.active && !doneToday && <Spark rest={!todayRoutines.length} />}
 
     {/* Monday: Your week; the 1st: Your month (lib/recap.js). Off in Settings → Look & Home. */}
     <RecapHomeCard S={S} />

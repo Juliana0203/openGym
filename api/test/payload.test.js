@@ -434,6 +434,7 @@ test('baseline carries the setup survey, bounded, with age instead of birth year
     gender: 'female', birthYear: new Date().getFullYear() - 30, height: 168, experience: 'advanced',
     activityLevel: 'moderate', bodyType: 'hacker', trainingGoal: 'strength', daysAvailable: 4,
     injuries: ['knee', 'lower_back', 'plague'], injuriesNote: 'old tweak',
+    muscleFocus: ['chest', 'calves', 'wings'], muscleLess: ['calves', 'biceps'],
     bodyweight: [{ d: '2026-01-01', w: 70 }, { d: '2026-03-01', w: 68.5 }]
   });
   const b = payload.build(S, { handle: handleFor('u'), kind: 'review' }).baseline;
@@ -443,6 +444,8 @@ test('baseline carries the setup survey, bounded, with age instead of birth year
   assert.equal(b.goal, 'strength');
   assert.equal(b.bodyType, undefined, 'an unknown word is dropped');
   assert.deepEqual(b.injuries, ['knee', 'lower_back']);
+  assert.deepEqual(b.muscleFocus, ['chest'], 'unknown muscles are dropped and go-easy wins over emphasis');
+  assert.deepEqual(b.muscleLess, ['calves', 'biceps']);
   assert.equal(b.startWeight.w, 70);
   assert.equal(b.currentWeight.w, 68.5);
   assert.ok(!JSON.stringify(b).includes('birthYear'));

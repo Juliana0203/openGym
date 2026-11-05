@@ -370,6 +370,8 @@ const BASELINE_ENUMS = {
 };
 const BASELINE_GOALS = ['lose_weight', 'maintain', 'bulking', 'strength'];
 const BASELINE_INJURIES = ['neck', 'shoulder', 'elbow', 'wrist', 'lower_back', 'hip', 'knee', 'ankle'];
+// The muscles the profile's emphasis and go-easy lists can name (frontend/src/lib/musclePrefs.js).
+const BASELINE_MUSCLES = ['chest', 'upper-back', 'deltoids', 'biceps', 'triceps', 'abs', 'lower-back', 'gluteal', 'quadriceps', 'hamstring', 'calves'];
 export function baselineOf(S, now) {
   const out = {};
   for (const [k, allowed] of Object.entries(BASELINE_ENUMS)) if (allowed.includes(S[k])) out[k] = S[k];
@@ -385,6 +387,11 @@ export function baselineOf(S, now) {
   if (injuries.length) out.injuries = [...new Set(injuries)];
   const note = text(S.injuriesNote, PROFILE_TEXT_MAX.limitations);
   if (note) out.injuriesNote = note;
+  // Less wins over focus, as in the app: a muscle on both lists counts as go-easy only.
+  const less = [...new Set(list(S.muscleLess).filter(m => BASELINE_MUSCLES.includes(m)))];
+  const focus = [...new Set(list(S.muscleFocus).filter(m => BASELINE_MUSCLES.includes(m) && !less.includes(m)))];
+  if (focus.length) out.muscleFocus = focus;
+  if (less.length) out.muscleLess = less;
   // The first and the latest weigh-in: where the body started and where it is, in the profile's unit.
   const dated = list(S.bodyweight).filter(b => b && day(b.d) && num(b.w) !== undefined && Number(b.w) > 0)
     .sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : 0));

@@ -1215,6 +1215,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .neat-card{padding:16px;display:flex;flex-direction:column;gap:6px}
 .neat-title{font-weight:600}
 .neat-pills{margin-top:6px;flex-wrap:wrap}
+.spark{margin:0 0 12px;padding:0 4px}
 .wprog-row{display:flex;align-items:center;gap:8px;height:12px;margin-bottom:8px}
 .wprog-row .wprog,.whdr.stick .wprog-row .wprog{flex:1;min-width:0;margin-bottom:0}
 .whdr.stick .wprog-row{margin-bottom:2px}
