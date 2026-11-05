@@ -697,11 +697,11 @@ instead, which the script renders; it may use only rect, circle, line, polyline,
 two-stop radialGradient. `--check` says whether the committed files still match. A new icon also
 needs its activity-alias in `AndroidManifest.xml`, its name in `AppIcons.java` and
 `AppIconPlugin.swift`, and its set in `ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES`;
-`scripts/app-icons.test.mjs` fails until all of them agree.
+`node scripts/app-icons.mjs --check` verifies that all of them agree.
 
 ## Distributing your own build
 
-The signed APK stays the way to get openGym on Android without a store, and it updates itself.
+The signed APK stays the way to get NEXUS on Android without a store, and it updates itself.
 The [App Store app](https://apps.apple.com/app/id6822275400) and the
 Google Play build come from the same code; how they are built and uploaded is in
 [APP_STORES.md](APP_STORES.md).

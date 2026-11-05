@@ -3,6 +3,7 @@ import { EXIDX } from './exercises.js'
 import { ALL_EQUIPMENT, eqAvailable } from './equipment.js'
 import { buildStarterPlan, starterPlanDays, starterPlanOptions, starterRoutines, starterProgrammeOptions, buildStarterProgramme } from './starter.js'
 import { normalizeProgramme, programmeRoutineIds } from './programmes.js'
+import { biomechanicalFamilyOf } from './exercise-substitutes.js'
 
 // The approved prescription, written out again rather than imported: a test that reads the
 // same table as the code would pass no matter what that table said. [weekday, name, sets].
@@ -174,6 +175,12 @@ describe('fitting a starter plan to equipment', () => {
     const push = buildStarterPlan('ppl', ['dumbbell']).routines[0]
     expect(EXIDX[push.ex[0].id].eq).toBe('dumbbell')
     expect(EXIDX[push.ex[0].id].bp).toBe('chest')
+  })
+
+  it('uses a reviewed biomechanical equivalent when the needed equipment is available', () => {
+    const push = buildStarterPlan('ppl', ['dumbbell', 'bench']).routines[0]
+    expect(EXIDX[push.ex[0].id].eq).toBe('dumbbell')
+    expect(biomechanicalFamilyOf(push.ex[0].id)).toBe('flat press')
   })
 
   it('is deterministic', () => {

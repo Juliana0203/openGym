@@ -1853,14 +1853,14 @@ const HEALTH_COPY = {
     footer: t('Workouts and weigh-ins go to Health Connect when you finish or change them.'),
     on: t('Writing to Health Connect'), denied: t('Health Connect permission not granted'), failed: t('Could not write to Health Connect'),
     removeFailed: t('Could not remove it from Health Connect'), stop: t('Stop writing to Health Connect?'),
-    stopSub: t('What openGym already wrote can stay in Health Connect as your data, or be removed from it.'),
+    stopSub: t('What NEXUS already wrote can stay in Health Connect as your data, or be removed from it.'),
   }),
   ios: () => ({
     section: t('Apple Health'), write: t('Write to Apple Health'), open: t('Open Apple Health'),
     footer: t('Workouts and weigh-ins go to Apple Health when you finish or change them.'),
     on: t('Writing to Apple Health'), denied: t('Apple Health permission not granted'), failed: t('Could not write to Apple Health'),
     removeFailed: t('Could not remove it from Apple Health'), stop: t('Stop writing to Apple Health?'),
-    stopSub: t('What openGym already wrote can stay in Apple Health as your data, or be removed from it.'),
+    stopSub: t('What NEXUS already wrote can stay in Apple Health as your data, or be removed from it.'),
   }),
 }
 

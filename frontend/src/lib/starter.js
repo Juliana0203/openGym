@@ -8,6 +8,7 @@
 import { uid } from './format.js'
 import { EXIDX } from './exercises.js'
 import { eqAvailable, ALL_EQUIPMENT } from './equipment.js'
+import { bestBiomechanicalAlternative } from './exercise-substitutes.js'
 
 const PPL = [
   ['push', 'Push Day', 'barbell', [['0025', 4, 8], ['0047', 3, 10], ['0426', 3, 10], ['0334', 3, 12], ['0241', 3, 12], ['0251', 3, 10]]],
@@ -80,6 +81,11 @@ const NEEDS_BALL = /exercise ball|stability ball|swiss ball|bosu/i
 // lift, one that is loaded too beats a body-weight drill — a push-up is not a bench press.
 // `taken` keeps a routine from ending up with the same exercise twice. null when nothing fits.
 export const substituteFor = (ex, equipment, taken) => {
+  const curated = bestBiomechanicalAlternative(
+    Object.values(EXIDX).filter(candidate => !taken.has(candidate.id) && eqAvailable(equipment, candidate)),
+    ex
+  )
+  if (curated && (ex.eq === 'body weight' || curated.eq !== 'body weight')) return curated
   const hasBall = equipment.includes('stability ball') || equipment.includes('bosu ball')
   const exWords = words(ex), exSm = new Set([ex.mg, ...(ex.sm || [])])
   const loaded = ex.eq !== 'body weight'
@@ -94,7 +100,7 @@ export const substituteFor = (ex, equipment, taken) => {
     // id as the last key: the same equipment always gives the same plan
     if (score > bestScore || (score === bestScore && c.id < best.id)) { best = c; bestScore = score }
   }
-  return best
+  return best || curated
 }
 
 // Re-cuts a routine list for an equipment list: what you can already do stays, what you can't

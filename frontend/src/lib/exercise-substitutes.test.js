@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { EXDB, EXIDX } from './exercises.js'
 import { eqAvailable } from './equipment.js'
-import { SUBSTITUTE_FAMILIES, suggestedSubstitutes, relatedSubstitutes } from './exercise-substitutes.js'
+import { SUBSTITUTE_FAMILIES, bestBiomechanicalAlternative, biomechanicalFamilyOf, suggestedSubstitutes, relatedSubstitutes } from './exercise-substitutes.js'
 
 describe('reviewed substitutes', () => {
   it('covers every catalogue exercise, without relying on a manually mapped movement family', () => {
@@ -33,8 +33,16 @@ describe('reviewed substitutes', () => {
     const available = EXDB.filter(e => eqAvailable(['dumbbell'], e))
     const suggestions = suggestedSubstitutes(available, EXIDX['0025'])
     expect(suggestions.map(e => e.id)).toEqual(['0662'])
+    expect(bestBiomechanicalAlternative(available, EXIDX['0025'])?.id).toBe('0662')
+    expect(biomechanicalFamilyOf('0025')).toBe('flat press')
+    expect(biomechanicalFamilyOf('unknown')).toBeNull()
     const ordered = ['0662', '0289', '0748', '0576'].map(id => EXIDX[id])
     expect(suggestedSubstitutes(ordered, EXIDX['0025']).map(e => e.id)).toEqual(['0662', '0289', '0748'])
+  })
+  it('prioritizes requested equipment only among reviewed equivalents', () => {
+    const candidates = ['0662', '0289', '0748'].map(id => EXIDX[id])
+    expect(bestBiomechanicalAlternative(candidates, EXIDX['0025'], { preferredEquipment: EXIDX['0748'].eq })?.id).toBe('0748')
+    expect(bestBiomechanicalAlternative(candidates, EXIDX['0025'], { preferredEquipment: 'unavailable' })?.id).toBe('0289')
   })
   it('does not guess for unknown, custom or missing exercise metadata', () => {
     expect(suggestedSubstitutes(EXDB, { id: 'custom', n: 'bench press', tg: 'pectorals' })).toEqual([])

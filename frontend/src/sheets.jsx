@@ -720,7 +720,7 @@ export function importFromApp(file, onDone) {
     if (parsed.error === 'empty') { toast(t('That file is empty')); return }
     // It looks like that app's export but does not read as one: say so rather than guess.
     if (parsed.error === 'format') { toast(t('This looks like a {0} export, but we couldn’t read it. Nothing was imported.', parsed.app)); return }
-    if (parsed.error === 'opengym') { toast(t('That’s an openGym backup or plan file. Use Import backup, or import it on the Plan screen.')); return }
+    if (parsed.error === 'opengym') { toast(t('That’s a legacy openGym backup or plan file. Use Import backup, or import it on the Plan screen.')); return }
     if (parsed.error) { toast(t("We don't recognise that file's columns. Check the docs for supported apps.")); return }
     if (parsed.kind === 'bodyweight' ? !parsed.bodyweight.length && !parsed.measurements?.length : !parsed.workouts.length && !parsed.routines?.routines?.length) {
       toast(t('Nothing to import from that file')); return
@@ -3413,7 +3413,7 @@ function ShareWorkoutImage({ w, close }) {
   const day = workoutDay(w) || todayISO()
   const model = useMemo(() => workoutCardModel(w, { unit: st.unit, nameOf: shareNameOf, warmups, streak: streakInfo(st, day).current }), [w, st.unit, warmups, st.workouts, st.weekStart, day]) // eslint-disable-line react-hooks/exhaustive-deps
   return <ShareCardSheet title={t('Share workout')} close={close} toast={toast}
-    name={'opengym-workout-' + day + '.png'} shareTitle={w.name || 'openGym'}
+    name={'nexus-workout-' + day + '.png'} shareTitle={w.name || 'NEXUS'}
     deps={[model, withMap, st.body]}
     render={pref => workoutCardImage(model, { ...pref, map: withMap, body: st.body })}>
     {model.levels && <div className="sect-b" style={{ marginBottom: 12 }}>

@@ -288,7 +288,7 @@ async function whyUnreachable(base, ms) {
   }
   if (reached) {
     const origin = globalThis.location?.origin || 'https://localhost'
-    return failure(t('Your server was reached, but it refused the app’s request (CORS). If a reverse proxy such as Traefik adds CORS headers, let requests from {0} through to openGym unchanged. See “Phone app and CORS” in docs/SELF_HOSTING.md.', origin), 'cors')
+    return failure(t('Your server was reached, but it refused the app’s request (CORS). If a reverse proxy such as Traefik adds CORS headers, let requests from {0} through to NEXUS unchanged. See “Phone app and CORS” in docs/SELF_HOSTING.md.', origin), 'cors')
   }
   // An address typed without a scheme is tried as https://. A home server on plain http gives
   // that try nothing to talk to, while the phone's browser, which tries http, opens it (#428).

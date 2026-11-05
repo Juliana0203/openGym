@@ -78,6 +78,9 @@ if you want to try it before installing anything.
   cardio by time and speed, rest time per exercise, planned deloads.
 - Your own exercises, with your own photo, GIF or short video. Location data is stripped on the
   device before upload.
+- When fitting a starter or suggested routine to available equipment, reviewed movement families
+  (press, row, squat, hinge and others) are preferred before the broader muscle-based fallback.
+  Curated equivalents keep the target muscle and favor loaded-for-loaded swaps where possible.
 
 **Training**
 
@@ -235,7 +238,7 @@ Traefik and nginx, and there are separate guides for
 | `NGINX_PORT` | Port the web container listens on inside the container | `80` |
 | `BACKEND` | Name of the API service that `/api` is proxied to | `api` |
 | `PORT` | Port the API listens on; the web container proxies to the same value | `3000` |
-| `RP_NAME` | Name shown in the passkey prompt | `openGym` |
+| `RP_NAME` | Name shown in the passkey prompt | `NEXUS` |
 | `SESSION_DAYS` | How long a sign-in lasts, in days | `90` |
 | `ADMIN_UIDS` | User ids that get the admin dashboard, comma-separated | *(none)* |
 | `FIRST_USER_ADMIN` | `1`: the first profile created on an empty instance becomes its admin | *(off)* |

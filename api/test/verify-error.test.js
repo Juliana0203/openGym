@@ -30,6 +30,7 @@ test('does not throw on a missing or empty error', () => {
 
 test('a refused write names the setting that fixes it when the browser is just at another address', () => {
   const line = originHint('POST /api/data', 'http://10.11.0.4:3030', 'http://localhost:8080', undefined);
+  assert.match(line, /where you open NEXUS/);
   assert.match(line, /^refused cross-origin POST \/api\/data: origin="http:\/\/10\.11\.0\.4:3030" expected=http:\/\/localhost:8080/);
   assert.match(line, /set ORIGIN=http:\/\/10\.11\.0\.4:3030 and RP_ID=10\.11\.0\.4 on the api service/);
 });

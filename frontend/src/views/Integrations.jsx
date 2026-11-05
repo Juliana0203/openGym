@@ -198,8 +198,8 @@ async function offAll(removeWritten, toast) {
 function WorksWith({ platform, nav }) {
   const store = platform === 'ios' ? 'Apple Health' : platform === 'android' ? 'Health Connect' : null
   return <Section title={t('Works with')} footer={store
-    ? t('No extra connection needed: they write to {0}, and openGym reads from there.', store)
-    : t('No extra connection needed: they write to Apple Health or Health Connect, and the openGym phone app reads from there.')}>
+    ? t('No extra connection needed: they write to {0}, and NEXUS reads from there.', store)
+    : t('No extra connection needed: they write to Apple Health or Health Connect, and the NEXUS phone app reads from there.')}>
     <div className="intg-chips">
       {WORKS_WITH.map(w => <button key={w.name} className="btn xs intg-chip" onClick={() => worksWithSheet(w, platform, nav)}>
         <Icon name={w.glyph} /><span translate="no">{w.name}</span>
@@ -222,7 +222,7 @@ function worksWithSheet(w, platform, nav) {
     {/* Three facts, not three settings: plain rows, no tinted tile on each (Integrations pass, I6). */}
     <Section className="intg-facts">
       <Row title={t('How it gets here')}
-        subtitle={t('{0} saves to Apple Health on iPhone or Health Connect on Android. openGym reads from there.', w.name)} />
+        subtitle={t('{0} saves to Apple Health on iPhone or Health Connect on Android. NEXUS reads from there.', w.name)} />
       <Row title={t('What NEXUS reads')} subtitle={t(READS[w.reads])} />
       <Row title={t('What it does not do')} subtitle={t('Workouts logged in NEXUS go to the health store, not back into {0} itself.', w.name)} />
     </Section>

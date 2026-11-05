@@ -22,6 +22,25 @@ export const SUBSTITUTE_FAMILIES = {
 
 const familyOf = new Map(Object.entries(SUBSTITUTE_FAMILIES).flatMap(([family, ids]) => ids.map(id => [id, family])))
 
+/** A reviewed movement family for a catalogue exercise, or null when it has none. */
+export const biomechanicalFamilyOf = id => familyOf.get(id) || null
+
+/**
+ * Pick the first reviewed equivalent that is available with the selected equipment.
+ * The family order is curated for movement similarity; `preferredEquipment` can prioritize
+ * one of the user's available tools without broadening the candidate family.
+ */
+export function bestBiomechanicalAlternative(list, exercise, { preferredEquipment } = {}) {
+  const family = !exercise?.custom && familyOf.get(exercise?.id)
+  if (!family || !exercise.tg) return null
+  const candidates = list.filter(candidate => !candidate.custom && candidate.id !== exercise.id &&
+    familyOf.get(candidate.id) === family && candidate.tg === exercise.tg)
+  const loaded = exercise.eq === 'body weight' ? candidates : candidates.filter(candidate => candidate.eq !== 'body weight')
+  const comparable = loaded.length ? loaded : candidates
+  if (!preferredEquipment) return comparable[0] || null
+  return comparable.find(candidate => candidate.eq === preferredEquipment) || comparable[0] || null
+}
+
 // The caller applies equipment/search filters and favourite order before asking for suggestions.
 export function suggestedSubstitutes(list, exercise) {
   const family = !exercise?.custom && familyOf.get(exercise?.id)
