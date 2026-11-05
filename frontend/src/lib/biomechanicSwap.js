@@ -1,10 +1,11 @@
 import { EXIDX } from './exercises.js'
+import { SUBSTITUTE_FAMILIES } from './exercise-substitutes.js'
 
 // Smart Swap: when the machine you planned is taken, the same movement with other equipment.
 // Reviewed catalogue ids only, ordered by how closely each one reproduces the movement.
 // `muscle` is the muscle the pattern trains, which can differ from a member's catalogue target
 // (a dumbbell pullover is catalogued under the chest but is a lat movement).
-export const SWAP_PATTERNS = {
+const CURATED = {
   'vertical pull': {
     muscle: 'lats',
     ids: ['0652', '0292', '0375', '1326', '1429', '0017', '0198', '2330'],
@@ -19,11 +20,33 @@ export const SWAP_PATTERNS = {
   },
 }
 
+// The curated patterns come first and keep their order. The substitute families
+// (exercise-substitutes.js) add every other lift, with their ids after the curated ones; 'row'
+// and 'vertical pull' are the same movements as the curated patterns, so they extend those.
+const FAMILY_INTO = { row: 'horizontal pull', 'vertical pull': 'vertical pull' }
+
+function buildPatterns() {
+  const out = Object.fromEntries(Object.entries(CURATED).map(([k, p]) => [k, { muscle: p.muscle, ids: [...p.ids] }]))
+  for (const [family, ids] of Object.entries(SUBSTITUTE_FAMILIES)) {
+    const into = FAMILY_INTO[family]
+    if (into) {
+      for (const id of ids) if (!out[into].ids.includes(id)) out[into].ids.push(id)
+      continue
+    }
+    const lead = ids.map(id => EXIDX[id]).find(Boolean)
+    if (lead) out[family] = { muscle: lead.tg, ids: [...ids] }
+  }
+  return out
+}
+
+export const SWAP_PATTERNS = buildPatterns()
+
 export const SWAP_EQUIPMENT = ['bodyweight', 'dumbbell', 'machine', 'barbell']
 
 const EQ_CLASS = {
   'body weight': 'bodyweight',
   dumbbell: 'dumbbell',
+  kettlebell: 'dumbbell',
   barbell: 'barbell',
   'ez barbell': 'barbell',
   'olympic barbell': 'barbell',

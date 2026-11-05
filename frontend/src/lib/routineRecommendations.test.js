@@ -54,9 +54,9 @@ describe('recommendRoutines', () => {
   })
 
   it('falls back to safe defaults for a missing or odd profile', () => {
-    expect(normalizeProfile()).toEqual({ gender: null, daysAvailable: 3, goal: 'hypertrophy', experience: null, bodyType: null, injuries: [] })
+    expect(normalizeProfile()).toEqual({ gender: null, daysAvailable: 3, goal: 'hypertrophy', experience: null, bodyType: null, injuries: [], focus: [], less: [] })
     expect(normalizeProfile({ gender: 'x', daysAvailable: 9, goal: 'y', experience: 'z', bodyType: 'q', injuries: ['tail', 'knee'] }))
-      .toEqual({ gender: null, daysAvailable: 5, goal: 'hypertrophy', experience: null, bodyType: null, injuries: ['knee'] })
+      .toEqual({ gender: null, daysAvailable: 5, goal: 'hypertrophy', experience: null, bodyType: null, injuries: ['knee'], focus: [], less: [] })
     expect(normalizeProfile({ daysAvailable: 0 }).daysAvailable).toBe(2)
     expect(buildRecommendedPlan(undefined).plan.schedule).toHaveLength(3)
   })

@@ -9,11 +9,17 @@
 // Height is kept in cm and shown in cm or inches by the weight unit, like the body measurements.
 import { addWeighIn } from './weigh-ins.js'
 import { isoOf } from './format.js'
+import { cleanMusclePrefs } from './musclePrefs.js'
 
 export const ACTIVITY_LEVELS = ['sedentary', 'moderate', 'active']
 export const BODY_TYPES = ['slim_hard_to_gain', 'easy_to_gain', 'athletic_balanced']
 export const EXPERIENCES = ['beginner', 'intermediate', 'advanced']
 export const TRAINING_GOALS = ['lose_weight', 'maintain', 'bulking', 'strength']
+
+// The progression a goal starts with, so a newcomer never has to choose between schemes:
+// linear for losing weight or maintaining, double progression for building size or strength.
+export const PROGRESSION_FOR_GOAL = { lose_weight: 'linear', maintain: 'linear', bulking: 'double', strength: 'double' }
+export const progressionForGoal = goal => PROGRESSION_FOR_GOAL[goal] || null
 export const INJURY_AREAS = ['neck', 'shoulder', 'elbow', 'wrist', 'lower_back', 'hip', 'knee', 'ankle']
 export const MIN_DAYS = 2
 export const MAX_DAYS = 5
@@ -59,7 +65,9 @@ export function draftFromState(S, now = new Date()) {
     daysAvailable: Math.min(MAX_DAYS, Math.max(MIN_DAYS, Math.round(Number(S?.daysAvailable)) || 3)),
     experience: oneOf(EXPERIENCES, S?.experience),
     injuries: Array.isArray(S?.injuries) ? S.injuries.filter(i => INJURY_AREAS.includes(i)) : [],
-    injuriesNote: typeof S?.injuriesNote === 'string' ? S.injuriesNote : ''
+    injuriesNote: typeof S?.injuriesNote === 'string' ? S.injuriesNote : '',
+    muscleFocus: cleanMusclePrefs({ focus: S?.muscleFocus, less: S?.muscleLess }).focus,
+    muscleLess: cleanMusclePrefs({ focus: S?.muscleFocus, less: S?.muscleLess }).less
   }
 }
 
@@ -84,6 +92,10 @@ export function applyProfile(S, draft, now = Date.now()) {
   set('experience', oneOf(EXPERIENCES, d.experience))
   set('injuries', (d.injuries || []).filter(i => INJURY_AREAS.includes(i)))
   set('injuriesNote', String(d.injuriesNote || '').trim().slice(0, 300))
+  const prefs = cleanMusclePrefs({ focus: d.muscleFocus, less: d.muscleLess })
+  set('muscleFocus', prefs.focus)
+  set('muscleLess', prefs.less)
+  assignProgression(S)
   S.profileAt = now
   let logged = null
   const w = Number(d.weight)
@@ -92,6 +104,20 @@ export function applyProfile(S, draft, now = Date.now()) {
     logged = addWeighIn(S, { d: isoOf(new Date(now)), w, t: now })
   }
   return logged
+}
+
+/**
+ * Sets the profile's default progression from the goal (S.progDefault, read by progression.js
+ * profileRule). It follows the goal until the lifter picks a rule by hand in Settings, which
+ * marks S.progManual; a rule other than the stock linear one set before this existed is kept too.
+ */
+export function assignProgression(S) {
+  const rule = progressionForGoal(S.trainingGoal)
+  if (!rule || S.progManual === true) return false
+  if (S.progAuto !== true && (S.progDefault ?? 'linear') !== 'linear') return false
+  S.progDefault = rule
+  S.progAuto = true
+  return true
 }
 
 /** The weigh-in the chart starts from, the latest, and how far it has moved ({ start, now, delta }). */
@@ -119,7 +145,9 @@ export function recommenderProfile(S) {
     goal: S?.trainingGoal,
     experience: S?.experience,
     bodyType: S?.bodyType,
-    injuries: Array.isArray(S?.injuries) ? S.injuries : []
+    injuries: Array.isArray(S?.injuries) ? S.injuries : [],
+    focus: S?.muscleFocus,
+    less: S?.muscleLess
   }
 }
 

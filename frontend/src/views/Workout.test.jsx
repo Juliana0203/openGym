@@ -3626,7 +3626,7 @@ describe('the workout screen chrome (v1.3.11)', () => {
     await openMore()
     const groupsOf = sections => sections.map(g => g.more ? ['More', groupsOf(g.more)] : [g.title, g.items.filter(Boolean).map(it => it.label)])
     expect(groupsOf(lastMenu().sections)).toEqual([
-      [undefined, ['Add note', 'Swap exercise', 'Add warm-up set', 'Rest timer', 'History']],
+      [undefined, ['Add note', 'Swap exercise', 'Use available equipment', 'Add warm-up set', 'Rest timer', 'History']],
       ['More', [
         ['Exercise', ['Exercise settings', 'Target RIR', 'Plate loading', 'How to do it']],
         ['Order and supersets', ['Make superset with next', 'Move up', 'Move down']],
@@ -3643,7 +3643,7 @@ describe('the workout screen chrome (v1.3.11)', () => {
     await openMore()
     const today = lastMenu().sections[0].items.filter(Boolean)
     const name = exerciseNameText(EXIDX['0047'])
-    expect(today.map(it => it.label)).toEqual(['Add note', 'Swap exercise', 'Swap to ' + name, 'Add warm-up set', 'Rest timer', 'History'])
+    expect(today.map(it => it.label)).toEqual(['Add note', 'Swap exercise', 'Use available equipment', 'Swap to ' + name, 'Add warm-up set', 'Rest timer', 'History'])
     expect(item('Swap to ' + name).sub).toBe('Planned backup, same sets and reps')
     item('Swap to ' + name).onClick()
     expect(mocks.swapActiveWorkoutToBackup).toHaveBeenCalledWith(0, '0047')

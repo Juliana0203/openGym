@@ -667,7 +667,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
               profileRule). Absent reads as linear, the way the app always behaved. A routine's or
               an exercise's own rule still wins. */}
           <SelectRow icon="chartLine" iconTint="var(--blue)" title={t('Default progression')}
-            value={profileRule(S)} onChange={v => update(s => { s.progDefault = v })}
+            value={profileRule(S)} onChange={v => update(s => { s.progDefault = v; s.progManual = true; delete s.progAuto })}
             options={POLICIES_FOR.reps.map(p => ({ value: p, label: t(POLICY_NAME[p]), subtitle: t(POLICY_DESC[p]) }))} />
           {/* Whose reps a planned session opens with (lib/session-start.js). The plan's by default:
               the routine is what you said you would do, and history and progression decide the

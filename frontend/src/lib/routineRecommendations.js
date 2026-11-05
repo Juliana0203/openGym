@@ -13,12 +13,15 @@
 //  - Body type trims or tolerates density. Slim and hard to gain loses the metabolic sets (high
 //    rep accessories lose a set, reps stop at 12) and rests longer; easy to gain rests a little less.
 //  - Injuries swap the exercises that load the sore area for guided variants, or drop them.
+//  - Muscle preferences come last: an emphasised muscle gets a set more (towards MAV), a muscle to
+//    go easy on is held at maintenance sets (lib/musclePrefs.js).
 //
 // Gender never picks a different programme. It only nudges which half of the body gets the
 // extra set (and goes first in a four-day split), and `emphasis` can override it outright.
 import { buildPlanFromKeys } from './starter.js'
 import { EXIDX } from './exercises.js'
 import { GENDERS } from './gender.js'
+import { cleanMusclePrefs, muscleOfExercise, setsForPreference } from './musclePrefs.js'
 
 export const GOALS = ['hypertrophy', 'strength', 'recomposition']
 export const EXPERIENCES = ['beginner', 'intermediate', 'advanced']
@@ -70,7 +73,8 @@ export const normalizeProfile = (profile = {}) => {
     goal: GOALS.includes(goal) ? goal : 'hypertrophy',
     experience: EXPERIENCES.includes(profile.experience) ? profile.experience : null,
     bodyType: BODY_TYPES.includes(profile.bodyType) ? profile.bodyType : null,
-    injuries: [...new Set([].concat(profile.injuries || []).filter(a => a in SAFE_SWAPS))]
+    injuries: [...new Set([].concat(profile.injuries || []).filter(a => a in SAFE_SWAPS))],
+    ...cleanMusclePrefs({ focus: profile.focus, less: profile.less })
   }
 }
 
@@ -105,7 +109,7 @@ const restFor = (goal, compound, bodyType) => {
 
 // Goal first (reps, sets, rest, RIR), then body type, then experience (volume), then at most one
 // extra set per session on the emphasised half (two in a five-day week, where volume specialises).
-function volumeAdjuster({ goal, experience, bodyType, daysAvailable }, emphasis) {
+function volumeAdjuster({ goal, experience, bodyType, daysAvailable, focus, less }, emphasis) {
   const bumped = new Map(), heavy = new Map()
   const maxBumps = daysAvailable === 5 ? 2 : 1
   return (key, id, sets, reps) => {
@@ -129,6 +133,9 @@ function volumeAdjuster({ goal, experience, bodyType, daysAvailable }, emphasis)
     const favoured = emphasis === 'lower' ? legs : emphasis === 'upper' ? !legs : false
     const growth = goal !== 'strength' && experience !== 'beginner' && bodyType !== 'slim_hard_to_gain'
     if (growth && favoured && s <= 3 && (bumped.get(key) || 0) < maxBumps) { s += 1; bumped.set(key, (bumped.get(key) || 0) + 1) }
+
+    // The lifter's own muscle preferences have the last word on the sets.
+    s = setsForPreference(s, muscleOfExercise(id), { focus, less }, experience)
 
     const rir = rirFor(goal, experience)
     return [s, r, { restSec: restFor(goal, compound, bodyType), ...(rir !== 2 && { targetRir: rir }) }]

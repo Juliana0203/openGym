@@ -1,0 +1,27 @@
+{
+  "users": [
+    {
+      "id": "kf4H_qUgAh6g3XC0",
+      "name": "Juliana",
+      "created": "2026-11-05T03:10:48.489Z",
+      "lastPull": 1793848913710
+    }
+  ],
+  "creds": [
+    {
+      "id": "hzxhPaE5Y_ipDFnFEaRZgg",
+      "userId": "kf4H_qUgAh6g3XC0",
+      "publicKey": "pQECAyYgASFYIGq1wk8sL9Edxklp1JfpaBUhDIWFIEZ4a38UMGxD8WmUIlggdkjj1sdDRNElymkrjpD2EsBxy3-4wfPkGRCZxnBLHZk",
+      "counter": 0,
+      "transports": [
+        "hybrid",
+        "internal"
+      ],
+      "created": "2026-11-05T03:10:48.489Z",
+      "lastUsed": "2026-11-05T03:10:48.489Z"
+    }
+  ],
+  "subs": [],
+  "invites": [],
+  "deviceLinks": []
+}

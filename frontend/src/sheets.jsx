@@ -1997,7 +1997,12 @@ export function swapActiveWorkoutToBackup(index, backupId) {
 }
 
 const SWAP_EQUIPMENT_LABEL = { bodyweight: () => t('Body weight'), dumbbell: () => t('Dumbbell'), machine: () => t('Machine'), barbell: () => t('Barbell') }
-const SWAP_MUSCLE_LABEL = { lats: () => t('Lats'), 'upper back': () => t('Upper back'), quads: () => t('Quads') }
+const SWAP_MUSCLE_LABEL = {
+  lats: () => t('Lats'), 'upper back': () => t('Upper back'), quads: () => t('Quads'), pectorals: () => t('Chest'),
+  delts: () => t('Shoulders'), biceps: () => t('Biceps'), triceps: () => t('Triceps'), abs: () => t('Abs'),
+  glutes: () => t('Glutes'), hamstrings: () => t('Hamstrings'), calves: () => t('Calves'), spine: () => t('Lower back'),
+  traps: () => t('Traps'), forearms: () => t('Forearms'), adductors: () => t('Adductors')
+}
 
 /**
  * Smart Swap: the taken machine, replaced by the same movement on other equipment
@@ -2015,7 +2020,7 @@ export function smartSwapSheet(index, onPick) {
       ? alts.map(a => ({
         icon: 'swap',
         label: exerciseNameText(a.ex),
-        sub: `${SWAP_EQUIPMENT_LABEL[a.equipment]()} · ${SWAP_MUSCLE_LABEL[a.muscle]()}`,
+        sub: `${SWAP_EQUIPMENT_LABEL[a.equipment]()} · ${(SWAP_MUSCLE_LABEL[a.muscle] || (() => a.muscle))()}`,
         onClick: () => { onPick?.(); swapActiveWorkoutToBackup(index, a.ex.id) },
       }))
       : [{ icon: 'swap', label: t('No equivalent found'), sub: t('Use Swap exercise to pick any other'), disabled: true }],

@@ -1205,6 +1205,16 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
    8 px less margin and the header keeps the exact height it has without it. */
 .wmotive{display:flex;justify-content:space-between;gap:12px;margin:0 0 8px;opacity:.85}
 .wmotive-streak{white-space:nowrap;color:var(--accent,inherit)}
+.prepblock{margin:0 0 12px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.prepblock-hd{display:flex;gap:10px;align-items:center}
+.prepblock-title{font-weight:600}
+.prepblock-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.prepblock-list li{display:flex;justify-content:space-between;gap:12px}
+.prepblock-move{font-size:1.2rem;font-weight:600}
+.prepblock-clock{font-size:2rem;font-variant-numeric:tabular-nums}
+.neat-card{padding:16px;display:flex;flex-direction:column;gap:6px}
+.neat-title{font-weight:600}
+.neat-pills{margin-top:6px;flex-wrap:wrap}
 .wprog-row{display:flex;align-items:center;gap:8px;height:12px;margin-bottom:8px}
 .wprog-row .wprog,.whdr.stick .wprog-row .wprog{flex:1;min-width:0;margin-bottom:0}
 .whdr.stick .wprog-row{margin-bottom:2px}

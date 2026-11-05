@@ -1,13 +1,14 @@
-// The baseline profile as a four-step sheet: basics, lifestyle, goal and days, then experience and
-// limitations. Opened from the Home welcome card and from Settings (where it edits what is saved).
+// The baseline profile as a five-step sheet: basics, lifestyle, goal and days, experience and
+// limitations, then muscle preferences. Opened from the Home welcome card and from Settings (where it edits what is saved).
 // It keeps a draft and writes once, at the end, through lib/profile.js.
 import { useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import {
-  INJURY_AREAS, MIN_DAYS, MAX_DAYS, applyProfile, draftFromState, heightUnit, validateDraft, profileDone, weightProgress
+  INJURY_AREAS, MIN_DAYS, MAX_DAYS, applyProfile, draftFromState, heightUnit, validateDraft, profileDone, weightProgress, progressionForGoal
 } from '../lib/profile.js'
+import { PREF_MUSCLES } from '../lib/musclePrefs.js'
 import { fmtNum } from '../lib/format.js'
 import { Button, Segmented, NumberField, TextArea } from './ui.jsx'
 
@@ -21,7 +22,18 @@ export const INJURY_LABEL = () => ({
   lower_back: t('Lower back'), hip: t('Hip'), knee: t('Knee'), ankle: t('Ankle')
 })
 
-const STEPS = 4
+const STEPS = 5
+
+const prefField = { focus: 'muscleFocus', less: 'muscleLess' }
+export const PROGRESSION_EXPLAIN = () => ({
+  linear: t('If you complete your reps, you go up a little in weight next session.'),
+  double: t('You work within a rep range. When you reach the top of the range in every set, the weight goes up.')
+})
+export const PROGRESSION_NAME = () => ({ linear: t('Linear progression'), double: t('Double progression') })
+const PREF_LABEL = () => ({
+  chest: t('Chest'), 'upper-back': t('Lats & upper back'), deltoids: t('Shoulders'), biceps: t('Biceps'), triceps: t('Triceps'),
+  abs: t('Abs'), 'lower-back': t('Lower back'), gluteal: t('Glutes'), quadriceps: t('Quads'), hamstring: t('Hamstrings'), calves: t('Calves')
+})
 
 function Choice({ label, id, options, value, onChange }) {
   return <div style={{ marginBottom: 18 }}>
@@ -57,6 +69,15 @@ function ProfileWizard({ close }) {
     useUI.getState().toast(t('Profile saved'))
   }
   const toggleInjury = key => set({ injuries: draft.injuries.includes(key) ? draft.injuries.filter(k => k !== key) : [...draft.injuries, key] })
+
+  const toggleMuscle = (key, m) => {
+    const other = key === 'focus' ? 'less' : 'focus'
+    const cur = draft[prefField[key]]
+    set({
+      [prefField[key]]: cur.includes(m) ? cur.filter(x => x !== m) : [...cur, m],
+      [prefField[other]]: draft[prefField[other]].filter(x => x !== m)
+    })
+  }
 
   return <>
     <h3>{t('Your profile')}</h3>
@@ -94,6 +115,20 @@ function ProfileWizard({ close }) {
       <div style={{ height: 18 }} />
       <Choice label={t('Goal')} id="pf-goal" options={pick(GOAL_LABEL())}
         value={draft.trainingGoal} onChange={v => set({ trainingGoal: v })} />
+      {progressionForGoal(draft.trainingGoal) && <div className="small" data-progression style={{ marginTop: -6 }}>
+        <strong>{PROGRESSION_NAME()[progressionForGoal(draft.trainingGoal)]}.</strong> {PROGRESSION_EXPLAIN()[progressionForGoal(draft.trainingGoal)]}
+      </div>}
+    </>}
+
+    {step === 4 && <>
+      <div className="small dim" style={{ marginBottom: 14 }}>{t('Emphasis adds a little volume. Easy keeps a muscle at maintenance volume.')}</div>
+      {[['focus', t('Emphasis'), 'pf-focus'], ['less', t('Go easy on'), 'pf-less']].map(([key, label, id]) => <div key={key} style={{ marginBottom: 18 }}>
+        <div className="about-lbl" id={id}>{label}</div>
+        <div className="chips" role="group" aria-labelledby={id}>
+          {PREF_MUSCLES.map(m => <button key={m} type="button" className={'chip nocap' + (draft[prefField[key]].includes(m) ? ' on' : '')}
+            aria-pressed={draft[prefField[key]].includes(m)} onClick={() => toggleMuscle(key, m)}>{PREF_LABEL()[m]}</button>)}
+        </div>
+      </div>)}
     </>}
 
     {step === 3 && <>

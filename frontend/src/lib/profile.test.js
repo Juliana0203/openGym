@@ -48,6 +48,36 @@ describe('applyProfile', () => {
   })
 })
 
+describe('progression and muscle preferences', () => {
+  it('assigns the progression from the goal', () => {
+    const lose = { unit: 'kg', bodyweight: [] }
+    applyProfile(lose, { ...full, trainingGoal: 'lose_weight' }, NOW)
+    expect(lose.progDefault).toBe('linear')
+    const bulk = { unit: 'kg', bodyweight: [], progDefault: 'linear' }
+    applyProfile(bulk, { ...full, trainingGoal: 'bulking' }, NOW)
+    expect(bulk.progDefault).toBe('double')
+  })
+  it('follows a goal change while it was automatic, but never overrides a manual choice', () => {
+    const S = { unit: 'kg', bodyweight: [], progDefault: 'linear' }
+    applyProfile(S, { ...full, trainingGoal: 'bulking' }, NOW)
+    applyProfile(S, { ...full, trainingGoal: 'maintain' }, NOW + 1)
+    expect(S.progDefault).toBe('linear')
+    const manual = { unit: 'kg', bodyweight: [], progDefault: 'triple', progManual: true }
+    applyProfile(manual, { ...full, trainingGoal: 'bulking' }, NOW)
+    expect(manual.progDefault).toBe('triple')
+    const other = { unit: 'kg', bodyweight: [], progDefault: 'greyskull' }
+    applyProfile(other, { ...full, trainingGoal: 'bulking' }, NOW)
+    expect(other.progDefault).toBe('greyskull')
+  })
+  it('round-trips the muscle preferences into the recommender profile', () => {
+    const S = { unit: 'kg', bodyweight: [] }
+    applyProfile(S, { ...full, muscleFocus: ['chest', 'zzz'], muscleLess: ['calves'] }, NOW)
+    expect(S.muscleFocus).toEqual(['chest'])
+    expect(draftFromState(S).muscleLess).toEqual(['calves'])
+    expect(recommenderProfile(S)).toMatchObject({ focus: ['chest'], less: ['calves'] })
+  })
+})
+
 describe('profile helpers', () => {
   it('reports the first and latest weigh-in', () => {
     const S = { bodyweight: [{ d: '2026-02-01', w: 80 }, { d: '2026-01-01', w: 84 }] }

@@ -40,6 +40,7 @@ import { effortColor, rirOf, EFFORT_PRESETS } from '../lib/effort.js'
 import { autoRegulate, targetRirOf, withTargetRir, TARGET_RIRS } from '../lib/autoRegulation.js'
 import Elapsed from '../components/Elapsed.jsx'
 import MotivationLine from '../components/MotivationLine.jsx'
+import PrepBlock from '../components/PrepBlock.jsx'
 import LiveHeartRate from '../components/LiveHeartRate.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button, Check, NumberField } from '../components/ui.jsx'
@@ -2460,6 +2461,8 @@ function ActiveWorkout() {
     </div>
     {editing && <p className="muted small">{t('Editing a saved workout. Date and duration stay unchanged.')}</p>}
     {A.backfill && <div className="muted small" style={{ marginBottom: 8 }}>{t('Logging a past workout, so no rest timers.')}</div>}
+    {!editing && !A.backfill && done === 0 && A.entries.length > 0 && !A.prep?.pre &&
+      <PrepBlock kind="pre" entries={A.entries} onDone={() => update(s => { if (s.active) s.active.prep = { ...s.active.prep, pre: true } })} />}
 
     {A.entries.length ? (listMode ? (
       <div className="workout-list" data-testid="workout-list" ref={listRef}>
@@ -2614,6 +2617,8 @@ function ActiveWorkout() {
         <Button size="sm" icon="minus" style={{ color: 'var(--red)' }} disabled={working} onClick={removeExerciseSheet}>{t('Remove exercise')}</Button>
       </div>
     </>}
+    {!editing && !A.backfill && total > 0 && done === total && !A.prep?.post &&
+      <PrepBlock kind="post" entries={A.entries} onDone={() => update(s => { if (s.active) s.active.prep = { ...s.active.prep, post: true } })} />}
     <div style={{ height: 16 }} />
     {/* Finish is a full-width primary button once every set is done; before that it is the quiet
         "Finish workout early" line, since the header's Finish already covers the early way out. */}

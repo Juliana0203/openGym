@@ -48,4 +48,14 @@ describe('biomechanicSwap', () => {
     expect(movementPatternOf(EXIDX['0198'])).toBe('vertical pull')
     expect(equipmentClassOf(EXIDX['0652'])).toBe('bodyweight')
   })
+
+  it('covers the other lifts through the substitute families, same muscle', () => {
+    const alts = swapAlternatives(EXIDX['0025'], { equipment: ['dumbbell', 'machine'] })
+    expect(alts.length).toBeGreaterThan(0)
+    for (const a of alts) {
+      expect(a.pattern).toBe('flat press')
+      expect(a.muscle).toBe(EXIDX['0025'].tg)
+      expect(a.equipment).not.toBe(equipmentClassOf(EXIDX['0025']))
+    }
+  })
 })
