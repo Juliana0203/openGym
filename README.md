@@ -4,7 +4,7 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/readme/hero-dark.png">
   <source media="(prefers-color-scheme: light)" srcset="assets/readme/hero-light.png">
-  <img src="assets/readme/hero-dark.png" alt="openGym: the gym tracker you host yourself" width="100%">
+  <img src="assets/readme/hero-dark.png" alt="NEXUS: a self-hosted training intelligence app" width="100%">
 </picture>
 </p>
 
@@ -29,20 +29,38 @@
 
 </div>
 
-## Why openGym
+## Why NEXUS
 
-Most workout apps keep your data on their servers, push you towards a subscription, or vanish
-when the company does. openGym runs on your own box, keeps your data in a folder you control, and
-is yours to fork. It still behaves like a modern app: installable on the home screen, passkey
-sign-in, works offline, syncs between your phone and your laptop.
+NEXUS is a minimalist training-intelligence app built for focused, low-friction use in the gym.
+It is self-hosted and offline-first: your training data lives on your own device or server, and the
+interface gets you to the next set without unnecessary screens or distractions.
 
-No account on someone else's server, no subscription, no ads, no telemetry. One
-`docker compose up` and it's running.
+There is no required third-party account, subscription, advertising or telemetry. Run it on your
+own server with Docker, or use the mobile app independently. The core interface is available
+exclusively in English (`en`) and Spanish (`es`).
 
 The [in-browser demo](https://opengym.ch/demo/) is the real app with example data,
 if you want to try it before installing anything.
 
 ## Features
+
+**Basal profile and intelligent routines**
+
+- An optional four-step onboarding survey records age, weight, height, gender, daily activity,
+  body-type preference, training experience, injuries or limitations, everyday goal and available
+  training days. Edit the same profile later in Settings.
+- Weight is stored in the weigh-in history, so the first entry anchors the progress chart and later
+  entries show change over time. Height is stored canonically in centimetres; display units follow
+  the user's kg/lb preference.
+- Ask the routine recommender to build a week around 2–5 available days: two days use full body,
+  three use Push/Pull/Legs, four use Upper/Lower, and five combine PPL with additional upper/lower
+  sessions.
+- The programme adjusts sets, rep ranges, rest and target effort by goal and experience. Beginners
+  start near minimum effective volume (MEV); advanced profiles can receive additional work within
+  an adaptive volume range (MAV). Body-type preferences make small density adjustments rather than
+  changing the split.
+- Reported restrictions can swap selected exercises for supported alternatives or omit them. These
+  are conservative programming filters, not medical advice or a diagnosis.
 
 **Planning**
 
@@ -69,6 +87,13 @@ if you want to try it before installing anything.
 - A quiet workout screen: one menu per exercise, the set number as the set's own menu, card or
   list view. Switches in Settings bring the old button rows back if you liked them.
 - Optional effort column as RIR or RPE, colour-coded, with a plain-language line per level.
+- Rate completed sets using RIR or RPE. Each exercise can have its own `targetRir`; the app compares
+  the reported effort with that target and suggests a load adjustment when the set was notably
+  harder or easier than planned. Suggested weights respect the active gym's equipment and plate
+  increments.
+- A restrained workout microcopy module changes its short coaching line with session progress and
+  the latest effort rating. A weekly training streak is calculated from logged workouts and shown
+  alongside the session.
 - Plate math for barbell, EZ bar, trap bar and Smith machine, worked out from the plates you own.
   Train in more than one place? Each gym keeps its own plates, dumbbells, bars and machine stacks,
   and the phone can switch to the gym you just walked into.
@@ -106,8 +131,8 @@ if you want to try it before installing anything.
   everything as one JSON file, or your workouts and body data as a spreadsheet (CSV).
 - Share a plan as a small file or print it as a PDF.
 - Optional admin dashboard with invite-only signup and an activity log.
-- 20 languages, including right-to-left Arabic and Traditional Chinese. Exercise names and
-  instructions are translated for most of them.
+- The application interface is localized only in English (`en`) and Spanish (`es`); exercise
+  catalogue names and instructions may have their own translations.
 
 **On the phone and the wrist**
 
@@ -130,10 +155,13 @@ if you want to try it before installing anything.
 
 **Optional extras, off by default**
 
-- An [AI coach](docs/AI_COACH.md) that drafts a week of routines and later suggests changes based on
-  what you logged, and answers questions about your training. You approve every change. It runs
-  on your server, or on the phone alone, with your own provider key (Anthropic, OpenAI, Gemini or
-  any OpenAI-compatible endpoint, Ollama included).
+- An [AI Coach](docs/AI_COACH.md), optional and off until enabled, that can draft routines, review
+  logged training, suggest adaptations and answer questions. It supports Anthropic, OpenAI, Gemini,
+  Ollama and other OpenAI-compatible endpoints; Claude Agent SDK and Codex CLI runtimes are also
+  available in the dedicated Coach image. The Coach receives an explicit, bounded payload
+  allowlist rather than the raw app state. It can include the user's baseline profile, exercise
+  targets and rated-set RIR/RPE summaries. The Coach consent screen explains what is sent and
+  where; the user approves proposed plan changes.
 - An [MCP server](mcp/README.md) so an assistant like Claude Desktop can answer questions about your
   training history, and log a workout you describe to it. Local; not part of the Docker build.
 - [Integrations](docs/INTEGRATIONS.md) in one place: Apple Health, Health Connect (Garmin, Fitbit,
@@ -147,15 +175,43 @@ The full list of what changed release by release is in the [changelog](CHANGELOG
 You need [Docker](https://docs.docker.com/get-docker/) with Compose.
 
 ```bash
-git clone https://github.com/DuarteSantos8/openGym
-cd openGym
+git clone https://github.com/DuarteSantos8/openGym nexus
+cd nexus
 cp .env.example .env
 docker compose pull      # prebuilt images, amd64 + arm64 (skip this to build from source)
 docker compose up -d
 ```
 
-Open <http://localhost:8080>, tap **Create profile**, and you're in. The exercise animations are
-part of the image, so there's nothing else to download.
+Open <http://localhost:8080>, create a profile and, if desired, complete the basal profile wizard
+from the welcome screen or Settings. The routine suggestion sheet can then use that profile.
+Exercise animations are part of the image, so there's nothing else to download.
+
+### Develop and test
+
+The frontend is React 19 with Vite, React Router and Zustand, styled with native CSS (no Tailwind).
+The API is a small Node.js `node:http` server, not Fastify; it stores JSON under `DATA_DIR`.
+
+```bash
+# Frontend development server
+cd frontend
+npm install
+npm run dev
+
+# Frontend unit and component tests (Vitest)
+npm test
+
+# API tests (Node's built-in test runner)
+cd ../api
+npm install
+npm test
+```
+
+For CI-equivalent locale checks, run these from `frontend/`:
+
+```bash
+node scripts/check-locales.mjs
+node scripts/check-source-strings.mjs --strict
+```
 
 To reach it from your phone with passkeys you need HTTPS on a domain; that's a two-line change in
 `.env`. The [self-hosting guide](docs/SELF_HOSTING.md) walks through Cloudflare Tunnel, Caddy,
