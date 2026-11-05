@@ -32,6 +32,7 @@ import Stepper from './components/Stepper.jsx'
 import DateField from './components/DateField.jsx'
 import { durationSheet } from './components/DurationWheel.jsx'
 import { cleanBackups, withBackups, MAX_BACKUPS, backupSlotConfig } from './lib/routine-backups.js'
+import { swapAlternatives } from './lib/biomechanicSwap.js'
 import { normalizeAliases } from './lib/exercise-aliases.js'
 import ExerciseAliasesEditor, { ExerciseAliasesField, ExerciseAliasesLink } from './components/ExerciseAliases.jsx'
 import { SG_NAME_MAX } from './lib/superset-meta.js'
@@ -1993,6 +1994,32 @@ export function swapActiveWorkoutToBackup(index, backupId) {
   if (!current || !ex || backupId === current.id) return
   const cfg = backupSlotConfig({ ...plannedConfigOf(current), id: current.id }, backupId, st, current.rid, id => !!EXIDX[id])
   commitActiveSwap(index, ex, cfg)
+}
+
+const SWAP_EQUIPMENT_LABEL = { bodyweight: () => t('Body weight'), dumbbell: () => t('Dumbbell'), machine: () => t('Machine'), barbell: () => t('Barbell') }
+const SWAP_MUSCLE_LABEL = { lats: () => t('Lats'), 'upper back': () => t('Upper back'), quads: () => t('Quads') }
+
+/**
+ * Smart Swap: the taken machine, replaced by the same movement on other equipment
+ * (lib/biomechanicSwap.js). Picking one is the planned-backup swap: same sets and reps, sets
+ * already logged stay in the history.
+ */
+export function smartSwapSheet(index, onPick) {
+  const st = S()
+  const current = st.active?.entries?.[index]
+  if (!current) return
+  const alts = swapAlternatives(EXIDX[current.id], { exclude: st.active.entries.map(e => e.id) })
+  menuSheet({
+    title: t('Use available equipment'),
+    items: alts.length
+      ? alts.map(a => ({
+        icon: 'swap',
+        label: exerciseNameText(a.ex),
+        sub: `${SWAP_EQUIPMENT_LABEL[a.equipment]()} · ${SWAP_MUSCLE_LABEL[a.muscle]()}`,
+        onClick: () => { onPick?.(); swapActiveWorkoutToBackup(index, a.ex.id) },
+      }))
+      : [{ icon: 'swap', label: t('No equivalent found'), sub: t('Use Swap exercise to pick any other'), disabled: true }],
+  })
 }
 
 function commitActiveSwap(index, ex, cfg) {

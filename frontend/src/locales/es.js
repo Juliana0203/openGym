@@ -3722,4 +3722,13 @@ export default {
   "Done. The next one starts easier.": "Hecho. La próxima empieza más fácil.",
   "Every session counts. This one did.": "Cada sesión cuenta. Esta contó.",
   "{0}-week streak": "Racha de {0} semanas",
+  "Use available equipment": "Sustituir por equipo disponible",
+  "Same movement, other equipment": "Mismo movimiento, otro equipo",
+  "No equivalent found": "No hay equivalente",
+  "Use Swap exercise to pick any other": "Usa Cambiar ejercicio para elegir otro",
+  "Machine": "Máquina",
+  "Barbell": "Barra",
+  "Dumbbell": "Mancuerna",
+  "Lats": "Dorsales",
+  "Upper back": "Espalda alta",
 }
